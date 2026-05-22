@@ -8,12 +8,18 @@ export type ChatMessage =
       audioUrl: string;
       mimeType: string;
       status: ChatMessageStatus;
+      transcript?: string;
     }
   | {
       id: string;
       role: "assistant";
       kind: "text";
       text: string;
+    }
+  | {
+      id: string;
+      role: "assistant";
+      kind: "loading";
     };
 
 export type SpeechChatResponse = {

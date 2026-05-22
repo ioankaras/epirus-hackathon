@@ -5,7 +5,11 @@ import { useSpeechChat } from "@/components/speech/SpeechChatProvider";
 import { useSpeechRecorder } from "@/components/speech/useSpeechRecorder";
 import type { ChatMessage } from "@/lib/speech/types";
 
-function AudioMessageBubble({ message }: { message: Extract<ChatMessage, { kind: "audio" }> }) {
+function AudioMessageBubble({
+  message,
+}: {
+  message: Extract<ChatMessage, { kind: "audio" }>;
+}) {
   const statusLabel =
     message.status === "sending"
       ? "Sending…"
@@ -16,23 +20,35 @@ function AudioMessageBubble({ message }: { message: Extract<ChatMessage, { kind:
   return (
     <div className="flex justify-end">
       <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary-navy px-4 py-3 text-white">
-        <audio
-          controls
-          src={message.audioUrl}
-          className="w-full max-w-[220px] h-10"
-          preload="metadata"
-        />
+        <p className="text-base text-white">
+          {message.transcript ?? "Voice message"}
+        </p>
         {statusLabel && (
           <p
             className={
               message.status === "error"
-                ? "mt-2 text-sm text-accent-red"
-                : "mt-2 text-sm text-white/70"
+                ? "mt-1 text-sm text-accent-red"
+                : "mt-1 text-sm text-white/70"
             }
           >
             {statusLabel}
           </p>
         )}
+      </div>
+    </div>
+  );
+}
+
+function AssistantLoadingBubble() {
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-surface px-4 py-3 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-wide text-text-secondary">
+          Assistant
+        </p>
+        <p className="mt-1 text-base text-text-secondary">
+          Waiting for response…
+        </p>
       </div>
     </div>
   );
@@ -60,6 +76,7 @@ export default function SpeechChatModal() {
     isOpen,
     close,
     messages,
+    isAwaitingReply,
     readAloudEnabled,
     setReadAloudEnabled,
     sendAudio,
@@ -170,13 +187,19 @@ export default function SpeechChatModal() {
             </p>
           ) : (
             <div className="flex flex-col gap-3">
-              {messages.map((message) =>
-                message.role === "user" ? (
-                  <AudioMessageBubble key={message.id} message={message} />
-                ) : (
+              {messages.map((message) => {
+                if (message.role === "user") {
+                  return (
+                    <AudioMessageBubble key={message.id} message={message} />
+                  );
+                }
+                if (message.kind === "loading") {
+                  return <AssistantLoadingBubble key={message.id} />;
+                }
+                return (
                   <AssistantMessageBubble key={message.id} message={message} />
-                ),
-              )}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
           )}
@@ -195,14 +218,14 @@ export default function SpeechChatModal() {
             <button
               type="button"
               onClick={() => void handleRecordToggle()}
-              disabled={status === "requesting"}
+              disabled={status === "requesting" || isAwaitingReply}
               aria-label={
                 isRecording ? "Stop recording and send" : "Start recording"
               }
               className={
                 isRecording
-                  ? "flex h-16 w-16 items-center justify-center rounded-full bg-accent-red text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-accent-red/40"
-                  : "flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-navy to-action-blue text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-action-blue/40"
+                  ? "flex h-16 w-16 items-center justify-center rounded-full bg-accent-red text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-accent-red/40 disabled:opacity-50"
+                  : "flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-navy to-action-blue text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-action-blue/40 disabled:opacity-50"
               }
             >
               {isRecording ? (
@@ -225,9 +248,11 @@ export default function SpeechChatModal() {
             </button>
           </div>
           <p className="mt-3 text-center text-sm text-text-secondary">
-            {isRecording
-              ? "Tap to stop and send"
-              : "Tap to record a voice message"}
+            {isAwaitingReply
+              ? "Waiting for assistant…"
+              : isRecording
+                ? "Tap to stop and send"
+                : "Tap to record a voice message"}
           </p>
         </footer>
       </div>

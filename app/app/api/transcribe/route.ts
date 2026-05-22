@@ -1,5 +1,7 @@
 export const runtime = "nodejs";
 
+import OpenAI from "openai";
+
 const MAX_AUDIO_SIZE_BYTES = 25 * 1024 * 1024;
 const SUPPORTED_AUDIO_TYPES = new Set([
   "audio/mpeg",
@@ -59,17 +61,22 @@ export async function POST(request: Request) {
       );
     }
 
-    return Response.json({
-      success: true,
-      readyForIntegration: true,
-      received: {
-        name: audio.name,
-        size: audio.size,
-        type: normalizedAudioType || "application/octet-stream",
-      },
-      transcript: null,
-      message: "Audio upload received. Add OpenAI transcription here next.",
-    });
+    const apiKey = process.env.OPENAI_API_KEY?.trim();
+    if (!apiKey) {
+      return Response.json({ success: true, transcript: null });
+    }
+
+    try {
+      const openai = new OpenAI({ apiKey });
+      const result = await openai.audio.transcriptions.create({
+        model: "whisper-1",
+        file: audio,
+      });
+      const transcript = result.text?.trim() || null;
+      return Response.json({ success: true, transcript });
+    } catch {
+      return Response.json({ success: true, transcript: null });
+    }
   } catch {
     return Response.json(
       { success: false, error: "Invalid multipart form data" },

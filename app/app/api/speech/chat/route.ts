@@ -11,13 +11,10 @@ const SUPPORTED_AUDIO_TYPES = new Set([
   "audio/webm",
 ]);
 
-const STUB_REPLIES = [
-  "I received your voice message. How can I help with your banking today?",
-  "Thanks for speaking. You can ask about your balance, send money, or pay bills.",
-  "I am ready to assist. Tell me what you would like to do next.",
-];
-
-let replyIndex = 0;
+function getSpeechServiceUrl() {
+  const url = process.env.SPEECH_SERVICE_URL?.trim();
+  return url ? url.replace(/\/$/, "") : "";
+}
 
 export async function GET() {
   return Response.json({
@@ -26,15 +23,34 @@ export async function GET() {
     field: "audio",
     maxBytes: MAX_AUDIO_SIZE_BYTES,
     supportedTypes: Array.from(SUPPORTED_AUDIO_TYPES),
+    speechServiceUrlConfigured: Boolean(getSpeechServiceUrl()),
+    downstreamPath: "/chat",
     responseShape: {
       success: true,
       messageId: "string",
       reply: { text: "string" },
     },
+    serviceResponseShape: {
+      messageId: "string (optional)",
+      reply: { text: "string" },
+      error: "string (optional)",
+    },
   });
 }
 
 export async function POST(request: Request) {
+  const speechServiceUrl = getSpeechServiceUrl();
+
+  if (!speechServiceUrl) {
+    return Response.json(
+      {
+        success: false,
+        error: "Speech service not configured",
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const formData = await request.formData();
     const audio = formData.get("audio");
@@ -72,15 +88,66 @@ export async function POST(request: Request) {
       );
     }
 
-    const replyText = STUB_REPLIES[replyIndex % STUB_REPLIES.length];
-    replyIndex += 1;
+    const transcript = formData.get("transcript");
+
+    const outbound = new FormData();
+    outbound.append(
+      "audio",
+      audio,
+      audio.name || `speech-${Date.now()}.webm`,
+    );
+    if (typeof transcript === "string" && transcript.trim()) {
+      outbound.append("transcript", transcript.trim());
+    }
+
+    const serviceResponse = await fetch(`${speechServiceUrl}/chat`, {
+      method: "POST",
+      body: outbound,
+    });
+
+    let serviceData: {
+      success?: boolean;
+      messageId?: string;
+      reply?: { text?: string };
+      error?: string;
+    };
+
+    try {
+      serviceData = await serviceResponse.json();
+    } catch {
+      return Response.json(
+        { success: false, error: "Speech service returned invalid JSON" },
+        { status: 502 },
+      );
+    }
+
+    const replyText = serviceData.reply?.text?.trim();
+
+    if (!serviceResponse.ok || !replyText) {
+      return Response.json(
+        {
+          success: false,
+          error:
+            serviceData.error ||
+            `Speech service error (${serviceResponse.status})`,
+        },
+        { status: serviceResponse.ok ? 502 : serviceResponse.status },
+      );
+    }
 
     return Response.json({
       success: true,
-      messageId: `msg-${Date.now()}`,
+      messageId: serviceData.messageId ?? `msg-${Date.now()}`,
       reply: { text: replyText },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof TypeError) {
+      return Response.json(
+        { success: false, error: "Speech service unreachable" },
+        { status: 502 },
+      );
+    }
+
     return Response.json(
       { success: false, error: "Invalid multipart form data" },
       { status: 400 },
