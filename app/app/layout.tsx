@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BankProvider from "@/components/providers/BankProvider";
 
+import BottomNav from "@/components/ui/BottomNav";
+import VoiceButton from "@/components/ui/VoiceButton";
 import ServiceWorkerRegistrar from "@/components/providers/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
@@ -34,6 +36,8 @@ export default function RootLayout({
           <ServiceWorkerRegistrar />
           <main className="flex-1">{children}</main>
 
+          <VoiceButton />
+          <BottomNav />
         </BankProvider>
       </body>
     </html>
