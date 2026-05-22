@@ -1,13 +1,11 @@
 "use client";
 
 import { useBankContext } from "@/components/providers/BankProvider";
-import { useSpeechChat } from "@/components/speech/SpeechChatProvider";
 import AmountDisplay from "@/components/ui/AmountDisplay";
 import Card from "@/components/ui/Card";
 
 export default function Home() {
   const { account, loading } = useBankContext();
-  const { open: openSpeechChat } = useSpeechChat();
 
   if (loading) {
     return (
@@ -70,19 +68,6 @@ export default function Home() {
           icon={
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l2 2 4-4m5 4V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12l3-2 3 2 3-2 3 2z" />
-            </svg>
-          }
-        />
-        <Card
-          href="/speech"
-          variant="featured"
-          badge="AI"
-          onActivate={openSpeechChat}
-          label="AI Speech Mode"
-          sublabel="Talk through your banking tasks"
-          icon={
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v2.25m0-2.25a6 6 0 006-6m-6 6a6 6 0 01-6-6m6 2.25a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z" />
             </svg>
           }
         />
