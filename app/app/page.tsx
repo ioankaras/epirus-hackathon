@@ -1,11 +1,13 @@
 "use client";
 
 import { useBankContext } from "@/components/providers/BankProvider";
+import { useSpeechChat } from "@/components/speech/SpeechChatProvider";
 import AmountDisplay from "@/components/ui/AmountDisplay";
 import Card from "@/components/ui/Card";
 
 export default function Home() {
   const { account, loading } = useBankContext();
+  const { open: openSpeechChat } = useSpeechChat();
 
   if (loading) {
     return (
@@ -72,7 +74,10 @@ export default function Home() {
           }
         />
         <Card
-          href="/speech?autostart=mic"
+          href="/speech"
+          variant="featured"
+          badge="AI"
+          onActivate={openSpeechChat}
           label="AI Speech Mode"
           sublabel="Talk through your banking tasks"
           icon={

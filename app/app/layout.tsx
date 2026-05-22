@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BankProvider from "@/components/providers/BankProvider";
 import ServiceWorkerRegistrar from "@/components/providers/ServiceWorkerRegistrar";
+import SpeechChatShell from "@/components/speech/SpeechChatShell";
 
 export const metadata: Metadata = {
   title: "My Bank",
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <BankProvider>
           <ServiceWorkerRegistrar />
-          <main className="flex-1">{children}</main>
+          <SpeechChatShell>
+            <main className="flex-1 pb-20">{children}</main>
+          </SpeechChatShell>
         </BankProvider>
       </body>
     </html>
