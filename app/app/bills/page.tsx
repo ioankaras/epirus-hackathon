@@ -131,9 +131,10 @@ export default function BillsPage() {
     <div className="flex flex-col min-h-[80vh]">
       <PageHeader title="Scan Bill" />
 
-      <div className="flex flex-col items-center justify-center flex-1 px-6 gap-6 pt-10">
+      <div className="flex flex-col items-center justify-center flex-1 px-6 gap-6 pt-6">
         {/* Scan button */}
         <div className="flex flex-col items-center gap-2">
+          <h2 className="text-xl font-bold text-primary-navy mb-4 text-center">Σκανάρισμα  λογαριασμού</h2>
           <button onClick={handleScan} className="flex flex-col items-center justify-center w-48 h-48 rounded-3xl bg-action-blue text-white shadow-lg active:bg-action-blue-hover focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -173,6 +174,7 @@ export default function BillsPage() {
 
         {/* RF code entry */}
         <div className="w-full max-w-sm flex flex-col gap-3">
+          <h2 className="text-xl font-bold text-primary-navy mb-1 text-center">Εισαγωγή RF κωδικού</h2>
           <textarea
             rows={1}
             value={rfCode}
