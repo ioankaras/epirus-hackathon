@@ -138,10 +138,10 @@ if (preg_match('#^/accounts/(a\d{4})/transactions$#', $path, $m)) {
 }
 
 $routes = [
-    '/accounts'     => $accounts,
-    '/transactions' => $transactions,
-    '/contacts'     => $contacts,
-    '/bills'        => $bills,
+    '/api/accounts'     => $accounts,
+    '/api/transactions' => $transactions,
+    '/api/contacts'     => $contacts,
+    '/api/bills'        => $bills,
 ];
 
 if (array_key_exists($path, $routes)) {
