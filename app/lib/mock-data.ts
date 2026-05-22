@@ -159,6 +159,7 @@ export const bills: Bill[] = [
     dueDate: "2026-05-28",
     status: "unpaid",
     category: "electricity",
+    rf: "RF2605001789",
   },
   {
     id: "BILL-002",
@@ -168,6 +169,7 @@ export const bills: Bill[] = [
     dueDate: "2026-06-02",
     status: "unpaid",
     category: "water",
+    rf: "RF2606002345",
   },
   {
     id: "BILL-003",
@@ -177,6 +179,7 @@ export const bills: Bill[] = [
     dueDate: "2026-06-05",
     status: "unpaid",
     category: "phone",
+    rf: "RF2609003567",
   },
   {
     id: "BILL-004",
@@ -186,6 +189,7 @@ export const bills: Bill[] = [
     dueDate: "2026-06-10",
     status: "unpaid",
     category: "internet",
+    rf: "RF2610004892",
   },
   {
     id: "BILL-005",
@@ -195,5 +199,6 @@ export const bills: Bill[] = [
     dueDate: "2026-06-15",
     status: "unpaid",
     category: "gas",
+    rf: "RF2615005234",
   },
 ];

@@ -7,6 +7,8 @@ import Button from "@/components/ui/Button";
 import FeedbackModal from "@/components/ui/FeedbackModal";
 import { formatCurrency } from "@/lib/utils";
 import { BarcodeDetector } from "barcode-detector";
+import { useRouter } from "next/navigation";
+import { Bill } from "@/lib/types";
 
 export default function BillsPage() {
   const { refreshAccount, refreshBills, refreshTransactions } =
@@ -25,6 +27,7 @@ export default function BillsPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const router = useRouter();
 
   const stopCamera = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -72,11 +75,21 @@ export default function BillsPage() {
         const match = codes[0];
         if (match) {
           const detected = match.rawValue;
-          console.log("Code detected:", detected);
           stopCamera();
           setScanning(false);
-          setRfCode(detected);
-          setShowRfInput(true);
+
+          const billResponse = await (await fetch("/api/bills")).json()
+
+          if (!billResponse.bills.some((b: Bill) => b.rf === detected)) {
+            setFeedback({
+              type: "error",
+              title: "Scan Failed",
+              message: "Invalid RF Code",
+            });
+            return
+          }
+
+          router.push(`/bills/pay?code=${encodeURIComponent(detected)}`);
           return;
         }
       } catch {
@@ -129,7 +142,7 @@ export default function BillsPage() {
 
   return (
     <div className="flex flex-col min-h-[80vh]">
-      <PageHeader title="Pay Bills" />
+      <PageHeader title="Scan Bill" />
 
       <div className="flex flex-col items-center justify-center flex-1 px-6 gap-6">
         {/* Scan button */}
