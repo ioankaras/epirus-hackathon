@@ -71,6 +71,16 @@ export default function Home() {
             </svg>
           }
         />
+        <Card
+          href="/speech?autostart=mic"
+          label="AI Speech Mode"
+          sublabel="Talk through your banking tasks"
+          icon={
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v2.25m0-2.25a6 6 0 006-6m-6 6a6 6 0 01-6-6m6 2.25a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z" />
+            </svg>
+          }
+        />
       </div>
     </div>
   );
