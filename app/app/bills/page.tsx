@@ -1,26 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useBankContext } from "@/components/providers/BankProvider";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import FeedbackModal from "@/components/ui/FeedbackModal";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import type { Bill } from "@/lib/types";
-
-const categoryIcons: Record<Bill["category"], string> = {
-  electricity: "⚡",
-  water: "💧",
-  phone: "📱",
-  internet: "🌐",
-  gas: "🔥",
-};
+import { formatCurrency } from "@/lib/utils";
+import { BarcodeDetector } from "barcode-detector";
 
 export default function BillsPage() {
-  const { bills, account, loading, refreshAccount, refreshBills, refreshTransactions } =
+  const { refreshAccount, refreshBills, refreshTransactions } =
     useBankContext();
-  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
-  const [confirming, setConfirming] = useState(false);
+  const [rfCode, setRfCode] = useState("");
+  const [showRfInput, setShowRfInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -28,25 +20,82 @@ export default function BillsPage() {
     message: string;
   } | null>(null);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-xl text-text-secondary">Loading...</p>
-      </div>
-    );
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  const stopCamera = useCallback(() => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
+  useEffect(() => () => stopCamera(), [stopCamera]);
+
+  async function handleScan() {
+    setScanError(null);
+
+    if (!("BarcodeDetector" in window)) {
+      setScanError("Barcode scanning is not supported in this browser.");
+      return;
+    }
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+    } catch {
+      setScanError("Camera access denied. Please allow camera permissions.");
+      return;
+    }
+
+    streamRef.current = stream;
+    setScanning(true);
+
+    // Wait for the video element to mount
+    await new Promise<void>((res) => setTimeout(res, 100));
+
+    const video = videoRef.current;
+    if (!video) return;
+    video.srcObject = stream;
+    await video.play();
+
+    const detector = new BarcodeDetector({ formats: ["code_128", "qr_code", "ean_13", "pdf417"] });
+
+    const detect = async () => {
+      if (!videoRef.current) return;
+      try {
+        const codes: { rawValue: string }[] = await detector.detect(videoRef.current);
+        const match = codes[0];
+        if (match) {
+          const detected = match.rawValue;
+          console.log("Code detected:", detected);
+          stopCamera();
+          setScanning(false);
+          setRfCode(detected);
+          setShowRfInput(true);
+          return;
+        }
+      } catch {
+        // frame not ready yet — keep scanning
+      }
+      animFrameRef.current = requestAnimationFrame(detect);
+    };
+
+    animFrameRef.current = requestAnimationFrame(detect);
   }
 
-  const unpaidBills = bills.filter((b) => b.status === "unpaid");
-  const paidBills = bills.filter((b) => b.status === "paid");
-
-  async function handlePay() {
-    if (!selectedBill) return;
+  async function handleRfPay() {
+    if (!rfCode.trim()) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/bills", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ billId: selectedBill.id }),
+        body: JSON.stringify({ rfCode: rfCode.trim() }),
       });
       const data = await res.json();
       if (data.success) {
@@ -54,8 +103,12 @@ export default function BillsPage() {
         setFeedback({
           type: "success",
           title: "Bill Paid!",
-          message: `${formatCurrency(selectedBill.amount)} paid to ${selectedBill.provider}`,
+          message: data.amount
+            ? `${formatCurrency(data.amount)} paid successfully`
+            : "Payment successful",
         });
+        setRfCode("");
+        setShowRfInput(false);
       } else {
         setFeedback({
           type: "error",
@@ -71,146 +124,99 @@ export default function BillsPage() {
       });
     } finally {
       setSubmitting(false);
-      setConfirming(false);
-      setSelectedBill(null);
     }
   }
 
   return (
-    <div>
+    <div className="flex flex-col min-h-[80vh]">
       <PageHeader title="Pay Bills" />
 
-      <div className="px-4 py-5">
-        {unpaidBills.length === 0 && paidBills.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-text-secondary">No bills found</p>
-          </div>
-        ) : (
-          <>
-            {unpaidBills.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-primary-navy mb-3">
-                  Unpaid Bills
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {unpaidBills.map((bill) => (
-                    <button
-                      key={bill.id}
-                      onClick={() => {
-                        setSelectedBill(bill);
-                        setConfirming(true);
-                      }}
-                      className="bg-surface rounded-2xl p-5 w-full text-left active:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-action-blue/40"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full bg-badge-orange/10 flex items-center justify-center text-2xl shrink-0">
-                          {categoryIcons[bill.category]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-lg font-semibold text-primary-navy">
-                            {bill.provider}
-                          </p>
-                          <p className="text-sm text-text-secondary">
-                            Due: {formatDate(bill.dueDate)}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xl font-bold text-accent-red">
-                            {formatCurrency(bill.amount)}
-                          </p>
-                          <p className="text-xs text-badge-orange font-semibold uppercase">
-                            Unpaid
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+      <div className="flex flex-col items-center justify-center flex-1 px-6 gap-6">
+        {/* Scan button */}
+        <button onClick={handleScan} className="flex flex-col items-center justify-center w-48 h-48 rounded-3xl bg-action-blue text-white shadow-lg active:bg-action-blue-hover focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-16 h-16"
+          >
+            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+            <line x1="7" y1="12" x2="17" y2="12" />
+          </svg>
+          <span className="text-lg font-semibold">Scan to Pay</span>
+        </button>
 
-            {paidBills.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold text-primary-navy mb-3">
-                  Paid
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {paidBills.map((bill) => (
-                    <div
-                      key={bill.id}
-                      className="bg-surface rounded-2xl p-5 opacity-60"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center text-2xl shrink-0">
-                          {categoryIcons[bill.category]}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-lg font-semibold text-primary-navy">
-                            {bill.provider}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xl font-bold text-success">
-                            {formatCurrency(bill.amount)}
-                          </p>
-                          <p className="text-xs text-success font-semibold uppercase">
-                            Paid
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+        {scanError && (
+          <p className="text-accent-red text-sm text-center max-w-xs">{scanError}</p>
         )}
-      </div>
 
-      {/* Confirmation Modal */}
-      {confirming && selectedBill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
-          <div className="bg-surface rounded-3xl p-8 w-full max-w-sm">
-            <h2 className="text-2xl font-bold text-primary-navy mb-4 text-center">
-              Confirm Payment
-            </h2>
-            <div className="flex flex-col gap-3 mb-6">
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Bill</span>
-                <span className="font-semibold text-primary-navy">
-                  {selectedBill.provider}
-                </span>
-              </div>
-              <hr className="border-border" />
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Amount</span>
-                <span className="text-2xl font-bold text-primary-navy">
-                  {formatCurrency(selectedBill.amount)}
-                </span>
-              </div>
-              <hr className="border-border" />
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Due date</span>
-                <span className="font-semibold">
-                  {formatDate(selectedBill.dueDate)}
-                </span>
-              </div>
-            </div>
+        {/* RF code entry */}
+        {!showRfInput ? (
+          <button
+            onClick={() => setShowRfInput(true)}
+            className="text-text-secondary text-base underline underline-offset-4 focus:outline-none"
+          >
+            Enter RF code manually
+          </button>
+        ) : (
+          <div className="w-full max-w-sm flex flex-col gap-3">
+            <input
+              type="text"
+              value={rfCode}
+              onChange={(e) => setRfCode(e.target.value)}
+              placeholder="Enter code"
+              className="w-full min-h-[56px] px-4 rounded-xl border-2 border-border bg-surface text-primary-navy text-lg font-mono focus:outline-none focus:ring-4 focus:ring-action-blue/40 placeholder:text-text-secondary/50"
+              autoFocus
+            />
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                fullWidth
                 onClick={() => {
-                  setConfirming(false);
-                  setSelectedBill(null);
+                  setShowRfInput(false);
+                  setRfCode("");
                 }}
               >
                 Cancel
               </Button>
-              <Button fullWidth loading={submitting} onClick={handlePay}>
-                Pay Now
+              <Button
+                loading={submitting}
+                disabled={!rfCode.trim()}
+                onClick={handleRfPay}
+              >
+                Pay
               </Button>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Camera overlay */}
+      {scanning && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+          <video
+            ref={videoRef}
+            className="flex-1 w-full object-cover"
+            playsInline
+            muted
+          />
+          <div className="flex flex-col items-center gap-2 p-6 bg-black">
+            <p className="text-white text-base">Point at a barcode or QR code</p>
+            <button
+              onClick={() => {
+                stopCamera();
+                setScanning(false);
+              }}
+              className="text-white/60 text-sm underline underline-offset-4"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
