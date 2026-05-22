@@ -32,4 +32,5 @@ export interface Bill {
   dueDate: string;
   status: "unpaid" | "paid";
   category: "electricity" | "water" | "phone" | "internet" | "gas";
+  rf: string;
 }
