@@ -3,9 +3,9 @@
 import PageHeader from "@/components/ui/PageHeader";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { bills } from "@/lib/mock-data";
 import { Bill } from "@/lib/types";
-import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import FeedbackModal from "@/components/ui/FeedbackModal";
 
 export default function BillPay() {
     const searchParams = useSearchParams()
@@ -15,19 +15,27 @@ export default function BillPay() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
+    const [feedback, setFeedback] = useState<{
+        type: "success" | "error";
+        title: string;
+        message: string;
+    } | null>(null);
 
     useEffect(() => {
         if (rfCode) {
-            const foundBill = bills.find((b) => b.rf === rfCode)
-            if (foundBill) {
-                queueMicrotask(() => {
-                    setBill(foundBill)
+            fetch("/api/bills").then(
+                res => res.json().then(data => {
+                    const foundBill = data.bills.find((b: Bill) => b.rf === rfCode)
+
+                    if (foundBill) {
+                        setBill(foundBill)
+
+                        if (foundBill.status === "paid") {
+                            setSuccess(true)
+                        }
+                    }
                 })
-            } else {
-                queueMicrotask(() => {
-                    setError("Bill not found")
-                })
-            }
+            )
         }
     }, [rfCode])
 
@@ -49,14 +57,37 @@ export default function BillPay() {
             const data = await response.json()
 
             if (!response.ok) {
+                setFeedback({
+                    type: "error",
+                    title: "Payment Failed",
+                    message: data.error || "An error occurred during payment",
+                });
                 setError(data.error || "Payment failed")
             } else {
+                setFeedback({
+                    type: "success",
+                    title: "Payment Successful",
+                    message: data.amount
+                        ? `${formatCurrency(data.amount)} paid successfully`
+                        : "Bill paid successfully",
+                });
                 setSuccess(true)
             }
         } catch {
+            setFeedback({
+                type: "error",
+                title: "Payment Failed",
+                message: "An error occurred during payment",
+            });
             setError("An error occurred during payment")
         } finally {
             setLoading(false)
+            fetch("/api/bills").then(
+                res => res.json().then(data => {
+                    const foundBill = data.bills.find((b: Bill) => b.rf === rfCode)
+                    setBill(foundBill)
+                })
+            )
         }
     }
 
@@ -64,17 +95,6 @@ export default function BillPay() {
         <div>
             <PageHeader title="Pay Bill" />
 
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                </div>
-            )}
-
-            {success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    Payment successful!
-                </div>
-            )}
 
             {bill && (
                 <div className="space-y-6">
@@ -110,7 +130,7 @@ export default function BillPay() {
                             <div className="flex items-end justify-between">
                                 <div>
                                     <p className="text-gray-600">Status</p>
-                                    <p className="text-lg font-semibold capitalize text-yellow-600">{bill.status}</p>
+                                    {bill.status === "paid" ? <p className="text-lg font-semibold capitalize text-green-600">{bill.status}</p> : <p className="text-lg font-semibold capitalize text-yellow-600">{bill.status}</p>}
                                 </div>
                                 <button
                                     onClick={handlePayment}
@@ -132,6 +152,15 @@ export default function BillPay() {
                 <div className="text-center text-gray-500">
                     Loading bill information...
                 </div>
+            )}
+
+            {feedback && (
+                <FeedbackModal
+                    type={feedback.type}
+                    title={feedback.title}
+                    message={feedback.message}
+                    onClose={() => setFeedback(null)}
+                />
             )}
         </div>
     )
