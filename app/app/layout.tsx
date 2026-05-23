@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import BankProvider from "@/components/providers/BankProvider";
-import DeviceIdRegistrar from "@/components/providers/DeviceIdRegistrar";
 import ServiceWorkerRegistrar from "@/components/providers/ServiceWorkerRegistrar";
 import SpeechChatShell from "@/components/speech/SpeechChatShell";
 import { Suspense } from "react";

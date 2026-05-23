@@ -26,9 +26,9 @@ const BankContext = createContext<BankState>({
   contacts: [],
   bills: [],
   loading: true,
-  refreshAccount: async () => {},
-  refreshTransactions: async () => {},
-  refreshBills: async () => {},
+  refreshAccount: async () => { },
+  refreshTransactions: async () => { },
+  refreshBills: async () => { },
 });
 
 export function useBankContext() {
@@ -49,7 +49,7 @@ export default function BankProvider({
   const refreshAccount = useCallback(async () => {
     const res = await fetch("/mock-api/accounts");
     const data = await res.json();
-    setAccount(data[0]);
+    setAccount(data);
   }, []);
 
   const refreshTransactions = useCallback(async () => {
@@ -79,7 +79,7 @@ export default function BankProvider({
           contactsRes.json(),
           billsRes.json(),
         ]);
-        setAccount(accData[0]);
+        setAccount(accData);
         setTransactions(txData);
         setContacts(contactsData);
         setBills(billsData);

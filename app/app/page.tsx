@@ -7,6 +7,8 @@ import Card from "@/components/ui/Card";
 export default function Home() {
   const { account, loading } = useBankContext();
 
+  console.log(account)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
