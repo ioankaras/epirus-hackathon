@@ -238,7 +238,7 @@ export default function SpeechChatModal() {
             >
               <span
                 className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
-                  readAloudEnabled ? "translate-x-[26px]" : "translate-x-[4px]"
+                  readAloudEnabled ? "translate-x-[30px]" : "translate-x-[4px]"
                 }`}
               />
             </button>

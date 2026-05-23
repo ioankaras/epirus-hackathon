@@ -1,6 +1,7 @@
 export interface Account {
   id: string;
   name: string;
+  owner: string;
   accountNumber: string;
   balance: number;
   currency: string;

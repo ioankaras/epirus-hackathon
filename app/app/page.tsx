@@ -26,9 +26,13 @@ export default function Home() {
           amount={account?.balance ?? 0}
           className="text-white"
         />
-        <p className="text-base text-white mt-3">
-          {account?.name}
-        </p>
+        {account?.owner && (
+          <strong>
+            <p className="text-base text-white mt-3">
+              Γεια σας, {account.owner}
+            </p>
+          </strong>
+        )}
       </div>
 
       {/* Action Cards */}
