@@ -31,7 +31,7 @@ export default function SendPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-xl text-text-secondary">Loading...</p>
+        <p className="text-xl text-text-secondary">Φόρτωση...</p>
       </div>
     );
   }
@@ -57,21 +57,21 @@ export default function SendPage() {
         await Promise.all([refreshAccount(), refreshTransactions()]);
         setFeedback({
           type: "success",
-          title: "Money Sent!",
-          message: `${formatCurrency(parsedAmount)} sent to ${selectedContact.name}`,
+          title: "Τα χρήματα στάλθηκαν!",
+          message: `${formatCurrency(parsedAmount)} στάλθηκαν σε ${selectedContact.name}`,
         });
       } else {
         setFeedback({
           type: "error",
-          title: "Something went wrong",
-          message: data.error || "Please try again",
+          title: "Κάτι πήγε στραβά",
+          message: data.error || "Παρακαλώ δοκιμάστε ξανά",
         });
       }
     } catch {
       setFeedback({
         type: "error",
-        title: "Connection error",
-        message: "Please check your connection and try again",
+        title: "Σφάλμα σύνδεσης",
+        message: "Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά",
       });
     } finally {
       setSubmitting(false);
@@ -80,14 +80,15 @@ export default function SendPage() {
 
   return (
     <div>
-      <PageHeader title="Send Money" />
+      <PageHeader title="Αποστολή Χρημάτων" />
 
       <div className="px-5 py-6">
+        <h1 className="text-2xl font-bold text-primary-navy mb-6">Αποστολή Χρημάτων</h1>
         {/* Step 1: Pick Contact */}
         {step === "contact" && (
           <div>
             <h2 className="text-xl font-bold text-primary-navy mb-4">
-              Who do you want to send money to?
+              Σε ποιον θέλετε να στείλετε χρήματα;
             </h2>
             <div className="flex flex-col gap-3">
               {contacts.map((contact) => (
@@ -125,14 +126,14 @@ export default function SendPage() {
               </div>
               <div>
                 <p className="text-lg font-semibold text-primary-navy">
-                  Sending to {selectedContact.name}
+                  Αποστολή σε {selectedContact.name}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col gap-5">
               <Input
-                label="Amount (EUR)"
+                label="Ποσό (EUR)"
                 id="amount"
                 type="number"
                 inputMode="decimal"
@@ -143,15 +144,15 @@ export default function SendPage() {
                 step="0.01"
               />
               <Input
-                label="Description (optional)"
+                label="Περιγραφή (προαιρετικό)"
                 id="description"
-                placeholder="e.g. Rent, Gift..."
+                placeholder="π.χ. Ενοίκιο, Δώρο..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
               {account && (
                 <p className="text-base text-text-secondary">
-                  Available: {formatCurrency(account.balance)}
+                  Διαθέσιμο: {formatCurrency(account.balance)}
                 </p>
               )}
               <div className="flex gap-3 mt-4">
@@ -160,14 +161,14 @@ export default function SendPage() {
                   fullWidth
                   onClick={() => setStep("contact")}
                 >
-                  Back
+                  Πίσω
                 </Button>
                 <Button
                   fullWidth
                   onClick={() => setStep("confirm")}
                   disabled={!amountValid || parsedAmount > (account?.balance ?? 0)}
                 >
-                  Continue
+                  Συνέχεια
                 </Button>
               </div>
             </div>
@@ -178,19 +179,19 @@ export default function SendPage() {
         {step === "confirm" && selectedContact && (
           <div>
             <h2 className="text-xl font-bold text-primary-navy mb-6">
-              Please confirm this transfer
+              Επιβεβαίωση μεταφοράς
             </h2>
 
             <div className="bg-surface rounded-3xl p-6 flex flex-col gap-4 mb-6">
               <div className="flex justify-between items-center">
-                <span className="text-base text-text-secondary">To</span>
+                <span className="text-base text-text-secondary">Προς</span>
                 <span className="text-lg font-semibold text-primary-navy">
                   {selectedContact.name}
                 </span>
               </div>
               <hr className="border-border" />
               <div className="flex justify-between items-center">
-                <span className="text-base text-text-secondary">Amount</span>
+                <span className="text-base text-text-secondary">Ποσό</span>
                 <span className="text-2xl font-bold text-primary-navy">
                   {formatCurrency(parsedAmount)}
                 </span>
@@ -200,7 +201,7 @@ export default function SendPage() {
                   <hr className="border-border" />
                   <div className="flex justify-between items-center">
                     <span className="text-base text-text-secondary">
-                      Description
+                      Περιγραφή
                     </span>
                     <span className="text-lg text-primary-navy">
                       {description}
@@ -218,8 +219,8 @@ export default function SendPage() {
               >
                 Back
               </Button>
-              <Button fullWidth loading={submitting} onClick={handleSubmit}>
-                Confirm & Send
+              <Button fullWidth loading={submitting} onClick={handleSubmit} className="text-base">
+                Αποστολή
               </Button>
             </div>
           </div>

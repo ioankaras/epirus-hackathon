@@ -3,11 +3,11 @@
 :root {
   --background: #F0F2F5;
   --foreground: #1A1A2E;
-  --primary-navy: #1B2A4A;
-  --primary-navy-light: #243656;
-  --accent-red: #C62828;
-  --action-blue: #1565C0;
-  --action-blue-hover: #0D47A1;
+  --primary-navy: #242674;
+  --primary-navy-light: #3436a8;
+  --accent-red: #ed1b24;
+  --action-blue: #242674;
+  --action-blue-hover: #1a1b56;
   --success: #2E7D32;
   --surface: #FFFFFF;
   --text-secondary: #6B7280;
@@ -45,4 +45,16 @@ body {
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #242674 0%, #3a3cba 100%);
+}
+
+.bg-gradient-brand-diagonal {
+  background: linear-gradient(160deg, #242674 0%, #3a3cba 70%, #ed1b24 100%);
+}
+
+.bg-gradient-accent {
+  background: linear-gradient(135deg, #242674 0%, #ed1b24 100%);
 }

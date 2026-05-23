@@ -13,7 +13,7 @@ export default function AmountDisplay({
   size = "large",
   className = "",
 }: AmountDisplayProps) {
-  const sizeClass = size === "large" ? "text-5xl" : "text-3xl";
+  const sizeClass = size === "large" ? "text-3xl" : "text-3xl";
 
   return (
     <span className={`font-bold tracking-tight ${sizeClass} ${className}`}>

@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 import { Bill } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import FeedbackModal from "@/components/ui/FeedbackModal";
+import { useBankContext } from "@/components/providers/BankProvider";
 
 export default function BillPay() {
+    const { refreshAccount } = useBankContext()
     const searchParams = useSearchParams()
     const rfCode = searchParams.get("code")
 
@@ -60,26 +62,27 @@ export default function BillPay() {
                 setFeedback({
                     type: "error",
                     title: "Payment Failed",
-                    message: data.error || "An error occurred during payment",
+                    message: data.error || "ψ",
                 });
-                setError(data.error || "Payment failed")
+                setError(data.error || "Η πληρωμή απέτυχε")
             } else {
                 setFeedback({
                     type: "success",
-                    title: "Payment Successful",
+                    title: "Επιτυχής Πληρωμή",
                     message: data.amount
-                        ? `${formatCurrency(data.amount)} paid successfully`
-                        : "Bill paid successfully",
+                        ? `${formatCurrency(data.amount)} πληρώθηκαν επιτυχώς`
+                        : "Ο λογαριασμός πληρώθηκε επιτυχώς",
                 });
                 setSuccess(true)
+                await refreshAccount()
             }
         } catch {
             setFeedback({
                 type: "error",
                 title: "Payment Failed",
-                message: "An error occurred during payment",
+                message: "Κάτι πήγε στραβά κατά την πληρωμή",
             });
-            setError("An error occurred during payment")
+            setError("Κάτι πήγε στραβά κατά την πληρωμή")
         } finally {
             setLoading(false)
             fetch("/api/bills").then(
@@ -99,48 +102,48 @@ export default function BillPay() {
             {bill && (
                 <div className="space-y-6">
                     <div className="bg-white shadow rounded-lg p-6">
-                        <h2 className="text-2xl font-bold mb-4">Bill Details</h2>
+                        <h2 className="text-2xl font-bold mb-4">Στοιχεία Λογαριασμού</h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p className="text-gray-600">Provider</p>
+                                <p className="text-gray-600">Πάροχος</p>
                                 <p className="text-lg font-semibold">{bill.provider}</p>
                             </div>
 
                             <div>
-                                <p className="text-gray-600">Reference Code</p>
+                                <p className="text-gray-600">RF Κωδικός</p>
                                 <p className="text-lg font-semibold">{bill.rf}</p>
                             </div>
 
                             <div>
-                                <p className="text-gray-600">Amount</p>
+                                <p className="text-gray-600">Ποσό</p>
                                 <p className="text-lg font-semibold">{formatCurrency(bill.amount, bill.currency)}</p>
                             </div>
 
                             <div>
-                                <p className="text-gray-600">Due Date</p>
+                                <p className="text-gray-600">Προθεσμία Πληρωμής</p>
                                 <p className="text-lg font-semibold">{formatDate(bill.dueDate)}</p>
                             </div>
 
                             <div>
-                                <p className="text-gray-600">Category</p>
+                                <p className="text-gray-600">Κατηγορία</p>
                                 <p className="text-lg font-semibold capitalize">{bill.category}</p>
                             </div>
 
                             <div className="flex items-end justify-between">
                                 <div>
-                                    <p className="text-gray-600">Status</p>
-                                    {bill.status === "paid" ? <p className="text-lg font-semibold capitalize text-green-600">{bill.status}</p> : <p className="text-lg font-semibold capitalize text-yellow-600">{bill.status}</p>}
+                                    <p className="text-gray-600">Κατάσταση</p>
+                                    {bill.status === "paid" ? <p className="text-lg font-semibold text-green-600">Πληρωμένο</p> : <p className="text-lg font-semibold text-yellow-600">Εκκρεμεί</p>}
                                 </div>
                                 <button
                                     onClick={handlePayment}
                                     disabled={loading || success}
                                     className={`py-2 px-4 rounded-lg font-semibold text-white transition-colors whitespace-nowrap ${loading || success
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
+                                        : "bg-gradient-brand-diagonal active:opacity-90"
                                         }`}
                                 >
-                                    {loading ? "Processing..." : success ? "Complete" : "Pay"}
+                                    {loading ? "Επεξεργασία..." : success ? "Πληρωμένο" : "Πληρωμή"}
                                 </button>
                             </div>
                         </div>
@@ -150,7 +153,7 @@ export default function BillPay() {
 
             {!bill && !error && (
                 <div className="text-center text-gray-500">
-                    Loading bill information...
+                    Φόρτωση στοιχείων λογαριασμού...
                 </div>
             )}
 

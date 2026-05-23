@@ -41,7 +41,7 @@ export default function BillsPage() {
     setScanError(null);
 
     if (!("BarcodeDetector" in window)) {
-      setScanError("Barcode scanning is not supported in this browser.");
+      setScanError("Το σκανάρισμα δεν υποστηρίζεται σε αυτόν τον browser.");
       return;
     }
 
@@ -51,7 +51,7 @@ export default function BillsPage() {
         video: { facingMode: "environment" },
       });
     } catch {
-      setScanError("Camera access denied. Please allow camera permissions.");
+      setScanError("Η πρόσβαση στην κάμερα απορρίφθηκε. Επιτρέψτε την πρόσβαση στις ρυθμίσεις.");
       return;
     }
 
@@ -83,8 +83,8 @@ export default function BillsPage() {
           if (!billResponse.bills.some((b: Bill) => b.rf === detected)) {
             setFeedback({
               type: "error",
-              title: "Scan Failed",
-              message: "Invalid RF Code",
+              title: "Αποτυχία σκαναρίσματος",
+              message: "Μη έγκυρος κωδικός RF",
             });
             return
           }
@@ -110,8 +110,8 @@ export default function BillsPage() {
       if (!billResponse.bills.some((b: Bill) => b.rf === code)) {
         setFeedback({
           type: "error",
-          title: "Invalid Code",
-          message: "No bill found for this code",
+          title: "Μη έγκυρος κωδικός",
+          message: "Δεν βρέθηκε λογαριασμός για αυτόν τον κωδικό",
         });
         return;
       }
@@ -119,8 +119,8 @@ export default function BillsPage() {
     } catch {
       setFeedback({
         type: "error",
-        title: "Connection error",
-        message: "Please check your connection and try again",
+        title: "Σφάλμα σύνδεσης",
+        message: "Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά",
       });
     } finally {
       setSubmitting(false);
@@ -129,13 +129,14 @@ export default function BillsPage() {
 
   return (
     <div className="flex flex-col min-h-[80vh]">
-      <PageHeader title="Scan Bill" />
+      <PageHeader title="Πληρωμή Λογαριασμών" />
 
       <div className="flex flex-col items-center justify-center flex-1 px-6 gap-6 pt-6">
+        <h1 className="text-2xl font-bold text-primary-navy self-start">Πληρωμή Λογαριασμού</h1>
         {/* Scan button */}
         <div className="flex flex-col items-center gap-2">
           <h2 className="text-xl font-bold text-primary-navy mb-4 text-center">Σκανάρισμα  λογαριασμού</h2>
-          <button onClick={handleScan} className="flex flex-col items-center justify-center w-48 h-48 rounded-3xl bg-action-blue text-white shadow-lg active:bg-action-blue-hover focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-3">
+          <button onClick={handleScan} className="flex flex-col items-center justify-center w-32 h-32 rounded-3xl bg-gradient-brand text-white shadow-lg active:opacity-90 focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -144,7 +145,7 @@ export default function BillsPage() {
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="w-16 h-16"
+              className="w-10 h-10"
             >
               <path d="M3 7V5a2 2 0 0 1 2-2h2" />
               <path d="M17 3h2a2 2 0 0 1 2 2v2" />
@@ -152,7 +153,7 @@ export default function BillsPage() {
               <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
               <line x1="7" y1="12" x2="17" y2="12" />
             </svg>
-            <span className="text-lg font-semibold">Scan to Pay</span>
+            <span className="text-lg font-semibold">Σκανάρισμα</span>
           </button>
           {scanError && (
             <p className="text-accent-red text-sm text-center max-w-xs">{scanError}</p>
@@ -168,7 +169,7 @@ export default function BillsPage() {
         {/* Divider */}
         <div className="flex items-center gap-3 w-full max-w-sm">
           <hr className="flex-1 border-border" />
-          <span className="text-text-secondary text-md">ή</span>
+          <span className="text-primary-navy font-semibold text-md">ή</span>
           <hr className="flex-1 border-border" />
         </div>
 
@@ -201,7 +202,7 @@ export default function BillsPage() {
             onClick={() => setShowRfGuide(true)}
             className="text-text-secondary text-md underline underline-offset-4 focus:outline-none text-center"
           >
-            Πού βρίσκεται ο κωδικός RF;
+            Πού βρίσκεται ο RF κωδικός;
           </button>
         </div>
       </div>
@@ -232,11 +233,11 @@ export default function BillsPage() {
                   <p className="text-xs text-text-secondary text-center">Τετράγωνο με μικρά τετράγωνα μέσα</p>
                 </div>
               </div>
-              <p className="text-base text-text-secondary leading-snug">Πατήστε <strong className="text-primary-navy">«Scan to Pay»</strong> και στρέψτε την κάμερα πάνω του. Κρατήστε το τηλέφωνο σταθερό.</p>
+              <p className="text-base text-text-secondary leading-snug">Πατήστε <strong className="text-primary-navy">«Σκανάρισμα»</strong> και στρέψτε την κάμερα πάνω του. Κρατήστε το τηλέφωνο σταθερό.</p>
             </div>
             <button
               onClick={() => setShowScanGuide(false)}
-              className="mt-1 min-h-[56px] w-full rounded-xl bg-action-blue text-white text-xl font-semibold active:bg-action-blue-hover"
+              className="mt-1 min-h-[56px] w-full rounded-xl bg-gradient-brand-diagonal text-white text-xl font-semibold active:opacity-90"
             >
               Κατάλαβα
             </button>
@@ -252,7 +253,7 @@ export default function BillsPage() {
             <div className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
                 <span className="text-2xl shrink-0">1️⃣</span>
-                <p className="text-base text-text-secondary leading-snug">Πάρτε τον <strong className="text-primary-navy">έντυπο λογαριασμό</strong> σας (ΔΕΗ, νερό, τηλέφωνο κ.λπ.)</p>
+                <p className="text-base text-text-secondary leading-snug">Πάρτε τον <strong className="text-primary-navy">έντυπο λογαριασμό</strong> σας (ρεύμα, νερό, τηλέφωνο κ.λπ.)</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-2xl shrink-0">2️⃣</span>
@@ -265,7 +266,7 @@ export default function BillsPage() {
             </div>
             <button
               onClick={() => setShowRfGuide(false)}
-              className="mt-1 min-h-[56px] w-full rounded-xl bg-action-blue text-white text-xl font-semibold active:bg-action-blue-hover"
+              className="mt-1 min-h-[56px] w-full rounded-xl bg-gradient-brand-diagonal text-white text-xl font-semibold active:opacity-90"
             >
               Κατάλαβα
             </button>
@@ -283,7 +284,7 @@ export default function BillsPage() {
             muted
           />
           <div className="flex flex-col items-center gap-2 p-6 bg-black">
-            <p className="text-white text-base">Point at a barcode or QR code</p>
+            <p className="text-white text-base">Στρέψτε την κάμερα σε γραμμωτό ή QR κώδικα</p>
             <button
               onClick={() => {
                 stopCamera();
@@ -291,7 +292,7 @@ export default function BillsPage() {
               }}
               className="text-white/60 text-sm underline underline-offset-4"
             >
-              Cancel
+              Ακύρωση
             </button>
           </div>
         </div>
