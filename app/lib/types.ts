@@ -27,11 +27,10 @@ export interface Contact {
 }
 
 export interface Bill {
-  id: string;
   provider: string;
   amount: number;
   currency: string;
-  dueDate: string;
+  due_date: string;
   status: "unpaid" | "paid";
   category: "Ρεύμα" | "Νερό" | "Τηλεφωνία" | "internet" | "Καύσιμα";
   rf: string;

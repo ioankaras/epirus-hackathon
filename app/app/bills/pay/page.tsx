@@ -48,12 +48,12 @@ export default function BillPay() {
         setError(null)
 
         try {
-            const response = await fetch("/api/bills", {
+            const response = await fetch("/mock-api/bills", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ billId: bill.id }),
+                body: JSON.stringify({ billId: bill.rf }),
             })
 
             const data = await response.json()
@@ -122,7 +122,8 @@ export default function BillPay() {
 
                             <div>
                                 <p className="text-gray-600">Προθεσμία Πληρωμής</p>
-                                <p className="text-lg font-semibold">{formatDate(bill.dueDate)}</p>
+                                {/* <p>{bill.dueDate.toString()}</p> */}
+                                <p className="text-lg font-semibold">{formatDate(bill.due_date)}</p>
                             </div>
 
                             <div>
