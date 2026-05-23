@@ -5,16 +5,12 @@ const apiBase = process.env.HACKATHON_API_URL ?? "https://hackathon.epignosishq.
 const nextConfig: NextConfig = {
   serverExternalPackages: ["openai", "@anthropic-ai/sdk"],
   async rewrites() {
-    if (process.env.NODE_ENV === "development") {
-      return [
-        {
-          source: "/mock-api/:path*",
-          destination: `${apiBase}/mock-api/:path*`,
-        }
-      ]
-    } else {
-      return []
-    }
+    return [
+      {
+        source: "/mock-api/:path*",
+        destination: `${apiBase}/mock-api/:path*`,
+      }
+    ]
   },
   async headers() {
     return [

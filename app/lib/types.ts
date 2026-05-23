@@ -23,6 +23,7 @@ export interface Contact {
   id: string;
   name: string;
   accountNumber: string;
+  accountId: string;
   initials: string;
 }
 

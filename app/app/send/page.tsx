@@ -43,17 +43,16 @@ export default function SendPage() {
     if (!selectedContact || !amountValid) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/mock-api/transactions", {
+      const res = await fetch("/mock-api/transfer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          recipientId: selectedContact.id,
+          fromAccount: account?.id,
           amount: parsedAmount,
-          description: description || undefined,
+          toAccount: selectedContact.accountId,
         }),
       });
-      const data = await res.json();
-      if (data.success) {
+      if (res.ok) {
         await Promise.all([refreshAccount(), refreshTransactions()]);
         setFeedback({
           type: "success",
@@ -64,7 +63,7 @@ export default function SendPage() {
         setFeedback({
           type: "error",
           title: "Κάτι πήγε στραβά",
-          message: data.error || "Παρακαλώ δοκιμάστε ξανά",
+          message: "Παρακαλώ δοκιμάστε ξανά",
         });
       }
     } catch {
