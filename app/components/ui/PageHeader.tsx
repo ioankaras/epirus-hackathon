@@ -17,7 +17,7 @@ export default function PageHeader({
     <header className="sticky top-0 z-10 flex items-center gap-3 min-h-[64px] bg-primary-navy border-l-[5px] border-accent-red px-4 py-4 shadow-sm">
       {showBack && (
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex items-center justify-center w-11 h-11 rounded-full text-white active:bg-white/10 focus:outline-none"
           aria-label="Go back"
         >

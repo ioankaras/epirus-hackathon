@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useBankContext } from "@/components/providers/BankProvider";
 import PageHeader from "@/components/ui/PageHeader";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import FeedbackModal from "@/components/ui/FeedbackModal";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, matchesContactSearch } from "@/lib/utils";
 import type { Contact } from "@/lib/types";
 
 type Step = "contact" | "amount" | "confirm";
@@ -18,6 +18,7 @@ export default function SendPage() {
     useBankContext();
 
   const [step, setStep] = useState<Step>("contact");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -27,6 +28,14 @@ export default function SendPage() {
     title: string;
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (step === "contact") setSearchQuery("");
+  }, [step]);
+
+  const filteredContacts = contacts.filter((c) =>
+    matchesContactSearch(c.name, searchQuery)
+  );
 
   if (loading) {
     return (
@@ -90,8 +99,23 @@ export default function SendPage() {
             <h2 className="text-xl font-bold text-primary-navy mb-4">
               Σε ποιον θέλετε να στείλετε χρήματα;
             </h2>
+            <div className="mb-5">
+              <Input
+                label="Αναζήτηση επαφής"
+                id="contact-search"
+                type="search"
+                placeholder="Γράψτε ένα όνομα..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <div className="flex flex-col gap-3">
-              {contacts.map((contact) => (
+              {filteredContacts.length === 0 && (
+                <p className="text-xl text-text-secondary text-center py-8">
+                  Δεν βρέθηκαν επαφές
+                </p>
+              )}
+              {filteredContacts.map((contact) => (
                 <button
                   key={contact.id}
                   onClick={() => {
