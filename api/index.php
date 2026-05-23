@@ -37,6 +37,12 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         exit;
     }
 
+    if ($fromAccount === $toAccount) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Cannot transfer to the same account']);
+        exit;
+    }
+
     // Verify fromAccount belongs to the caller
     $stmtFrom = $db->prepare('SELECT id, balance FROM accounts WHERE id = :id AND user_id = :uid');
     $stmtFrom->execute([':id' => $fromAccount, ':uid' => $uid]);
