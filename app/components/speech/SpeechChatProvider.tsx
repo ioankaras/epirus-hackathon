@@ -93,7 +93,12 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
           body: transcribeForm,
         });
         if (transcribeResponse.ok) {
-          const transcribeData = await transcribeResponse.json() as { transcript?: string | null };
+          const transcribeData = await transcribeResponse.json() as {
+            success?: boolean;
+            transcript?: string | null;
+            reply?: string | null;
+          };
+
           const text = transcribeData.transcript?.trim();
           if (text) {
             transcript = text;
@@ -105,67 +110,37 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
               ),
             );
           }
+
+          const reply = transcribeData.reply?.trim();
+          if (reply) {
+            setMessages((prev) => [
+              ...prev
+                .filter((message) => message.id !== loadingMessageId)
+                .map((message) =>
+                  message.id === userMessageId && message.role === "user"
+                    ? { ...message, status: "sent" as const }
+                    : message,
+                ),
+              { id: createId(), role: "assistant" as const, kind: "text" as const, text: reply },
+            ]);
+            if (readAloudEnabled) speakText(reply);
+            return;
+          }
         }
       } catch {
         // transcription is optional; proceed without it
       }
 
-      try {
-        const formData = new FormData();
-        formData.append(
-          "audio",
-          audioBlob,
-          `speech-${Date.now()}.${getAudioFileExtension(mimeType)}`,
-        );
-        if (transcript) {
-          formData.append("transcript", transcript);
-        }
-
-        const response = await fetch("/api/speech/chat", {
-          method: "POST",
-          body: formData,
-        });
-        const data = (await response.json()) as SpeechChatResponse;
-
-        if (!response.ok || !data.success || !data.reply?.text) {
-          throw new Error(data.error || "Failed to send message");
-        }
-
-        const assistantText = data.reply.text;
-
-        setMessages((prev) => {
-          const withoutLoading = prev.filter(
-            (message) => message.id !== loadingMessageId,
-          );
-          return [
-            ...withoutLoading.map((message) =>
-              message.id === userMessageId && message.role === "user"
-                ? { ...message, status: "sent" as const }
-                : message,
-            ),
-            {
-              id: createId(),
-              role: "assistant",
-              kind: "text",
-              text: assistantText,
-            },
-          ];
-        });
-
-        if (readAloudEnabled) {
-          speakText(assistantText);
-        }
-      } catch {
-        setMessages((prev) =>
-          prev
-            .filter((message) => message.id !== loadingMessageId)
-            .map((message) =>
-              message.id === userMessageId && message.role === "user"
-                ? { ...message, status: "error" }
-                : message,
-            ),
-        );
-      }
+      // Remove loading indicator and mark message as sent
+      setMessages((prev) =>
+        prev
+          .filter((message) => message.id !== loadingMessageId)
+          .map((message) =>
+            message.id === userMessageId && message.role === "user"
+              ? { ...message, status: "sent" as const }
+              : message,
+          ),
+      );
     },
     [readAloudEnabled],
   );

@@ -2,85 +2,65 @@ export const runtime = "nodejs";
 
 import OpenAI from "openai";
 
-const MAX_AUDIO_SIZE_BYTES = 25 * 1024 * 1024;
-const SUPPORTED_AUDIO_TYPES = new Set([
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/mp4",
-  "audio/mpga",
-  "audio/m4a",
-  "audio/wav",
-  "audio/webm",
-]);
+const openai = new OpenAI();
 
-export async function GET() {
-  return Response.json({
-    endpoint: "/api/transcribe",
-    method: "POST",
-    field: "audio",
-    maxBytes: MAX_AUDIO_SIZE_BYTES,
-    supportedTypes: Array.from(SUPPORTED_AUDIO_TYPES),
-  });
-}
+const PROMPT =
+  "Μεταφορά, υπόλοιπο, λογαριασμός, πληρωμή, κατάθεση, ανάληψη, " +
+  "πιστωτική κάρτα, χρεωστική, IBAN, δόση, τόκος, αποταμίευση";
+
+const MCP_URL =
+  process.env.HACKATHON_MCP_URL ??
+  "https://accessible-supernotably-bryon.ngrok-free.dev/mcp";
 
 export async function POST(request: Request) {
+  const formData = await request.formData();
+  const audio = formData.get("audio");
+
+  if (!(audio instanceof File) || audio.size === 0) {
+    return Response.json({ success: false, error: "no_audio" }, { status: 400 });
+  }
+
   try {
-    const formData = await request.formData();
-    const audio = formData.get("audio");
+    const transcription = await openai.audio.transcriptions.create({
+      file: audio,
+      model: "whisper-1",
+      language: "el",
+      prompt: PROMPT,
+    });
 
-    if (!(audio instanceof File)) {
-      return Response.json(
-        { success: false, error: "Missing audio file" },
-        { status: 400 },
-      );
-    }
+    const transcript = transcription.text.trim();
 
-    if (audio.size === 0) {
-      return Response.json(
-        { success: false, error: "Audio file is empty" },
-        { status: 400 },
-      );
-    }
-
-    if (audio.size > MAX_AUDIO_SIZE_BYTES) {
-      return Response.json(
-        { success: false, error: "Audio file is too large" },
-        { status: 413 },
-      );
-    }
-
-    const normalizedAudioType = audio.type.split(";")[0].toLowerCase();
-
-    if (audio.type && !SUPPORTED_AUDIO_TYPES.has(normalizedAudioType)) {
-      return Response.json(
+    const response = await openai.responses.create({
+      model: "gpt-5.5",
+      input: transcript,
+      tools: [
         {
-          success: false,
-          error: `Unsupported audio type: ${audio.type}`,
+          type: "mcp",
+          server_label: "hackathon_mcp",
+          server_url: MCP_URL,
+          headers: { "ngrok-skip-browser-warning": "true" },
+          require_approval: "never",
         },
-        { status: 415 },
-      );
-    }
+      ],
+    });
 
-    const apiKey = process.env.OPENAI_API_KEY?.trim();
-    if (!apiKey) {
-      return Response.json({ success: true, transcript: null });
-    }
+    const reply =
+      response.output
+        .filter((o: { type: string }) => o.type === "message")
+        .map((o: { content: { type: string; text: string }[] }) =>
+          o.content
+            .filter((c) => c.type === "output_text")
+            .map((c) => c.text)
+            .join(""),
+        )
+        .join("") || "";
 
-    try {
-      const openai = new OpenAI({ apiKey });
-      const result = await openai.audio.transcriptions.create({
-        model: "whisper-1",
-        file: audio,
-      });
-      const transcript = result.text?.trim() || null;
-      return Response.json({ success: true, transcript });
-    } catch {
-      return Response.json({ success: true, transcript: null });
-    }
-  } catch {
+    return Response.json({ success: true, transcript, reply });
+  } catch (e) {
+    console.error("Transcribe/chat error:", e);
     return Response.json(
-      { success: false, error: "Invalid multipart form data" },
-      { status: 400 },
+      { success: false, error: "failed" },
+      { status: 500 },
     );
   }
 }
