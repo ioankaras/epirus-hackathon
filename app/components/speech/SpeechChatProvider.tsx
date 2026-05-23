@@ -123,6 +123,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
             transcript?: string | null;
             reply?: string | null;
             responseId?: string | null;
+            actions?: string[];
           };
 
           const text = transcribeData.transcript?.trim();
@@ -149,7 +150,13 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
                     ? { ...message, status: "sent" as const }
                     : message,
                 ),
-              { id: createId(), role: "assistant" as const, kind: "text" as const, text: reply },
+              {
+                id: createId(),
+                role: "assistant" as const,
+                kind: "text" as const,
+                text: reply,
+                ...(transcribeData.actions?.length ? { actions: transcribeData.actions } : {}),
+              },
             ]);
             if (readAloudEnabled) speakText(reply);
             return;

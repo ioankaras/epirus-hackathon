@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button";
 import FeedbackModal from "@/components/ui/FeedbackModal";
 
 import { BarcodeDetector } from "barcode-detector";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Bill } from "@/lib/types";
 
 export default function BillsPage() {
@@ -28,6 +28,8 @@ export default function BillsPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const autoScanTriggered = useRef(false);
 
   const stopCamera = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -37,7 +39,7 @@ export default function BillsPage() {
 
   useEffect(() => () => stopCamera(), [stopCamera]);
 
-  async function handleScan() {
+  const handleScan = useCallback(async () => {
     setScanError(null);
 
     if (!("BarcodeDetector" in window)) {
@@ -58,7 +60,6 @@ export default function BillsPage() {
     streamRef.current = stream;
     setScanning(true);
 
-    // Wait for the video element to mount
     await new Promise<void>((res) => setTimeout(res, 100));
 
     const video = videoRef.current;
@@ -99,7 +100,14 @@ export default function BillsPage() {
     };
 
     animFrameRef.current = requestAnimationFrame(detect);
-  }
+  }, [stopCamera, router]);
+
+  useEffect(() => {
+    if (searchParams.get("autoScan") === "true" && !autoScanTriggered.current) {
+      autoScanTriggered.current = true;
+      handleScan();
+    }
+  }, [searchParams, handleScan]);
 
   async function handleRfPay() {
     const code = rfCode.trim();

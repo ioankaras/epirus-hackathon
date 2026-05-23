@@ -92,8 +92,18 @@ export async function POST(request: Request) {
           headers: mcpHeaders,
           require_approval: "never",
         },
+        {
+          type: "function" as const,
+          name: "open_bill_scanner",
+          description:
+            "Κάλεσε αυτό όταν ο χρήστης θέλει να πληρώσει λογαριασμό σκανάροντας barcode ή QR code με την κάμερα.",
+          parameters: { type: "object" as const, properties: {}, additionalProperties: false },
+          strict: true,
+        },
       ],
     });
+
+    console.log("OpenAI response output:", JSON.stringify(response.output, null, 2));
 
     const reply =
       response.output
@@ -108,7 +118,16 @@ export async function POST(request: Request) {
         )
         .join("") || "";
 
-    return Response.json({ success: true, transcript, reply, responseId: response.id });
+    const actions = response.output
+      .filter((o) => o.type === "function_call")
+      .map((o) => ("name" in o ? (o.name as string) : ""))
+      .filter(Boolean);
+
+    const finalReply = reply || (actions.includes("open_bill_scanner")
+      ? "Ας ανοίξουμε την κάμερα για να σκανάρετε τον λογαριασμό σας."
+      : "");
+
+    return Response.json({ success: true, transcript, reply: finalReply, responseId: response.id, actions });
   } catch (e) {
     console.error("Transcribe/chat error:", e);
     return Response.json(
