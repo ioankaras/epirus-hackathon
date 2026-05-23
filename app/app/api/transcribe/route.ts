@@ -2,6 +2,14 @@ export const runtime = "nodejs";
 
 import OpenAI from "openai";
 
+function audioExtensionFromMime(mimeType: string): string {
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("mp4") || mimeType.includes("m4a") || mimeType.includes("aac")) return "mp4";
+  if (mimeType.includes("wav")) return "wav";
+  if (mimeType.includes("mpeg") || mimeType.includes("mp3")) return "mp3";
+  return "webm";
+}
+
 const openai = new OpenAI();
 
 const PROMPT =
@@ -22,8 +30,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    const ext = audioExtensionFromMime(audio.type);
+    const namedAudio = audio.name.endsWith(`.${ext}`)
+      ? audio
+      : new File([audio], `speech.${ext}`, { type: audio.type });
+
     const transcription = await openai.audio.transcriptions.create({
-      file: audio,
+      file: namedAudio,
       model: "whisper-1",
       language: "el",
       prompt: PROMPT,

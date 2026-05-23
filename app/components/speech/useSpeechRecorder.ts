@@ -80,10 +80,19 @@ export function useSpeechRecorder() {
       });
 
       const mimeType = getSupportedRecordingMimeType();
-      const recorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : undefined,
-      );
+
+      // Some mobile browsers (iOS Safari) report a mimeType as supported via
+      // isTypeSupported but throw when passing it to the constructor.
+      // Fall back to the browser's default if that happens.
+      let recorder: MediaRecorder;
+      try {
+        recorder = new MediaRecorder(
+          stream,
+          mimeType ? { mimeType } : undefined,
+        );
+      } catch {
+        recorder = new MediaRecorder(stream);
+      }
 
       streamRef.current = stream;
       recordedChunksRef.current = [];

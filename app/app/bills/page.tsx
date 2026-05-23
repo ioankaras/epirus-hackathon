@@ -136,7 +136,7 @@ export default function BillsPage() {
         {/* Scan button */}
         <div className="flex flex-col items-center gap-2">
           <h2 className="text-xl font-bold text-primary-navy mb-4 text-center">Σκανάρισμα  λογαριασμού</h2>
-          <button onClick={handleScan} className="flex flex-col items-center justify-center w-32 h-32 rounded-3xl bg-gradient-brand text-white shadow-lg active:opacity-90 focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-2">
+          <button onClick={handleScan} className="flex flex-col items-center justify-center w-32 h-32 rounded-3xl bg-action-blue text-white shadow-lg active:bg-action-blue-hover focus:outline-none focus:ring-4 focus:ring-action-blue/40 gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -237,7 +237,7 @@ export default function BillsPage() {
             </div>
             <button
               onClick={() => setShowScanGuide(false)}
-              className="mt-1 min-h-[56px] w-full rounded-xl bg-gradient-brand-diagonal text-white text-xl font-semibold active:opacity-90"
+              className="mt-1 min-h-[56px] w-full rounded-xl bg-action-blue text-white text-xl font-semibold active:bg-action-blue-hover"
             >
               Κατάλαβα
             </button>
@@ -266,7 +266,7 @@ export default function BillsPage() {
             </div>
             <button
               onClick={() => setShowRfGuide(false)}
-              className="mt-1 min-h-[56px] w-full rounded-xl bg-gradient-brand-diagonal text-white text-xl font-semibold active:opacity-90"
+              className="mt-1 min-h-[56px] w-full rounded-xl bg-action-blue text-white text-xl font-semibold active:bg-action-blue-hover"
             >
               Κατάλαβα
             </button>
