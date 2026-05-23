@@ -131,7 +131,7 @@ if (preg_match('#^/mock-api/accounts/(a\d+)/transactions$#', $path, $m)) {
 
 // Single account (by X-Device-Id): /mock-api/accounts
 if ($path === '/mock-api/accounts') {
-    $stmt = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, currency, last_updated AS lastUpdated FROM accounts WHERE user_id = :uid LIMIT 1');
+    $stmt = $db->prepare('SELECT a.id, a.name, a.account_number AS accountNumber, a.balance, a.currency, a.last_updated AS lastUpdated, u.first_name || \' \' || u.last_name AS owner FROM accounts a JOIN users u ON u.id = a.user_id WHERE a.user_id = :uid LIMIT 1');
     $stmt->execute([':uid' => $uid]);
     $row = $stmt->fetch();
     if (!$row) {
