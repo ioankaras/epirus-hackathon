@@ -48,7 +48,7 @@ $db->exec('
 
 $db->exec('
     CREATE TABLE contacts (
-        id             INTEGER PRIMARY KEY,
+        id             TEXT    PRIMARY KEY,
         name           TEXT    NOT NULL,
         account_number TEXT    NOT NULL,
         initials       TEXT    NOT NULL
@@ -255,7 +255,7 @@ foreach ($allNames as $idx => [$first, $last]) {
     $aNum     = iban($uid, 0);
 
     $insertContact->execute([
-        ':id'       => $uid,
+        ':id'       => sprintf('c%04d', $uid),
         ':name'     => $name,
         ':anum'     => $aNum,
         ':initials' => $initials,

@@ -76,7 +76,9 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
            ->execute([':amt' => $amount, ':now' => $now, ':id' => $toAccount]);
 
         // Debit tx for sender
-        $txDebitId = 'tx' . uniqid();
+        $maxTx = $db->query("SELECT MAX(CAST(SUBSTR(id, 2) AS INTEGER)) FROM transactions WHERE id LIKE 't%'")->fetchColumn();
+        $nextTxNum = ($maxTx === null ? 0 : (int)$maxTx) + 1;
+        $txDebitId = sprintf('t%04d', $nextTxNum);
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
                       VALUES (:id, :aid, :uid, "debit", "Transfer sent", :amt, "EUR", :date, :to)')
            ->execute([':id' => $txDebitId, ':aid' => $fromAccount, ':uid' => $uid,
@@ -87,7 +89,7 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         $receiverUid->execute([':id' => $toAccount]);
         $receiverRow = $receiverUid->fetch();
 
-        $txCreditId = 'tx' . uniqid();
+        $txCreditId = sprintf('t%04d', $nextTxNum + 1);
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
                       VALUES (:id, :aid, :uid, "credit", "Transfer received", :amt, "EUR", :date, :from)')
            ->execute([':id' => $txCreditId, ':aid' => $toAccount, ':uid' => $receiverRow['user_id'],
@@ -158,9 +160,9 @@ if ($path === '/mock-api/transactions') {
 }
 
 // Single contact: /mock-api/contacts/{id}
-if (preg_match('#^/mock-api/contacts/(\d+)$#', $path, $m)) {
-    $stmt = $db->prepare('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id WHERE c.id = :id');
-    $stmt->execute([':id' => (int) $m[1]]);
+if (preg_match('#^/mock-api/contacts/(c\d+)$#', $path, $m)) {
+    $stmt = $db->prepare('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = CAST(SUBSTR(c.id, 2) AS INTEGER) WHERE c.id = :id');
+    $stmt->execute([':id' => $m[1]]);
     $row = $stmt->fetch();
     if (!$row) {
         http_response_code(404);
@@ -173,16 +175,24 @@ if (preg_match('#^/mock-api/contacts/(\d+)$#', $path, $m)) {
 
 // All contacts (global, unscoped): /mock-api/contacts
 if ($path === '/mock-api/contacts') {
-    $stmt = $db->query('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id ORDER BY c.id');
-    echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
+    $stmt = $db->query('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = CAST(SUBSTR(c.id, 2) AS INTEGER) ORDER BY c.id');
+    echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 // Bills: /mock-api/bills
 if ($path === '/mock-api/bills') {
-    $stmt = $db->prepare('SELECT id, provider, amount, currency, due_date AS dueDate, status, category, rf FROM bills WHERE user_id = :uid');
-    $stmt->execute([':uid' => $uid]);
-    echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
+    $bills = [
+        [
+            'rf'       => 'RF84903148000001134433136',
+            'category' => 'Τηλεφωνία',
+            'currency' => 'EUR',
+            'amount'   => 21.66,
+            'due_date' => '31-05-2026',
+            'provider' => 'e-Bill',
+        ],
+    ];
+    echo json_encode($bills, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
 
