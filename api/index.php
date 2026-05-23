@@ -30,8 +30,8 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         exit;
     }
 
-    $amount = (int) $amount / 100;
-    if ($amount <= 0) {
+    $amount = (float) $amount;
+    if ($amount <= 0.0) {
         http_response_code(400);
         echo json_encode(['error' => 'Amount must be greater than zero']);
         exit;
@@ -104,9 +104,12 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
     }
 
     // Return updated sender account
-    $stmtUpdated = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, currency, last_updated AS lastUpdated FROM accounts WHERE id = :id');
+    $stmtUpdated = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, last_updated AS lastUpdated FROM accounts WHERE id = :id');
     $stmtUpdated->execute([':id' => $fromAccount]);
-    echo json_encode($stmtUpdated->fetch(), JSON_PRETTY_PRINT);
+    $updatedRow = $stmtUpdated->fetch();
+    $updatedRow['balance']  = (float) $updatedRow['balance'];
+    $updatedRow['currency'] = 'EUR';
+    echo json_encode($updatedRow, JSON_PRETTY_PRINT);
     exit;
 }
 
@@ -119,10 +122,12 @@ if (preg_match('#^/mock-api/accounts/(a\d+)/transactions$#', $path, $m)) {
         echo json_encode(['error' => 'Account not found']);
         exit;
     }
-    $stmt = $db->prepare('SELECT id, type, description, amount, currency, date, account_id AS accountId, recipient FROM transactions WHERE account_id = :aid AND user_id = :uid ORDER BY date DESC');
+    $stmt = $db->prepare('SELECT id, type, description, amount, date, account_id AS accountId, recipient FROM transactions WHERE account_id = :aid AND user_id = :uid ORDER BY date DESC');
     $stmt->execute([':aid' => $m[1], ':uid' => $uid]);
     $rows = $stmt->fetchAll();
     foreach ($rows as &$row) {
+        $row['amount']   = (float) $row['amount'];
+        $row['currency'] = 'EUR';
         if ($row['recipient'] === null) {
             unset($row['recipient']);
         }
@@ -133,7 +138,7 @@ if (preg_match('#^/mock-api/accounts/(a\d+)/transactions$#', $path, $m)) {
 
 // Single account (by X-Device-Id): /mock-api/accounts
 if ($path === '/mock-api/accounts') {
-    $stmt = $db->prepare('SELECT a.id, a.name, a.account_number AS accountNumber, a.balance, a.currency, a.last_updated AS lastUpdated, u.first_name || \' \' || u.last_name AS owner FROM accounts a JOIN users u ON u.id = a.user_id WHERE a.user_id = :uid LIMIT 1');
+    $stmt = $db->prepare('SELECT a.id, a.name, a.account_number AS accountNumber, a.balance, a.last_updated AS lastUpdated, u.first_name || \' \' || u.last_name AS owner FROM accounts a JOIN users u ON u.id = a.user_id WHERE a.user_id = :uid LIMIT 1');
     $stmt->execute([':uid' => $uid]);
     $row = $stmt->fetch();
     if (!$row) {
@@ -141,16 +146,20 @@ if ($path === '/mock-api/accounts') {
         echo json_encode(['error' => 'Account not found']);
         exit;
     }
+    $row['balance']  = (float) $row['balance'];
+    $row['currency'] = 'EUR';
     echo json_encode($row, JSON_PRETTY_PRINT);
     exit;
 }
 
 // All transactions: /mock-api/transactions
 if ($path === '/mock-api/transactions') {
-    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.currency, t.date, t.account_id AS accountId, t.recipient FROM transactions t WHERE t.user_id = :uid ORDER BY t.date DESC');
+    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.date, t.account_id AS accountId, t.recipient FROM transactions t WHERE t.user_id = :uid ORDER BY t.date DESC');
     $stmt->execute([':uid' => $uid]);
     $rows = $stmt->fetchAll();
     foreach ($rows as &$row) {
+        $row['amount']   = (float) $row['amount'];
+        $row['currency'] = 'EUR';
         if ($row['recipient'] === null) {
             unset($row['recipient']);
         }
