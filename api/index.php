@@ -189,7 +189,8 @@ if (preg_match('#^/mock-api/contacts/(c\d+)$#', $path, $m)) {
 
 // All contacts (global, unscoped): /mock-api/contacts
 if ($path === '/mock-api/contacts') {
-    $stmt = $db->query('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = CAST(SUBSTR(c.id, 2) AS INTEGER) ORDER BY c.id');
+    $stmt = $db->prepare('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = CAST(SUBSTR(c.id, 2) AS INTEGER) WHERE c.id != :cid ORDER BY c.id');
+    $stmt->execute([':cid' => sprintf('c%04d', $uid)]);
     echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
