@@ -43,7 +43,7 @@ export default function SendPage() {
     if (!selectedContact || !amountValid) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/transactions", {
+      const res = await fetch("/mock-api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
