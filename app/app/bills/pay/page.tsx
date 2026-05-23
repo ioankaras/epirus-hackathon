@@ -140,7 +140,7 @@ export default function BillPay() {
                                     disabled={loading || success}
                                     className={`py-2 px-4 rounded-lg font-semibold text-white transition-colors whitespace-nowrap ${loading || success
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gradient-brand-diagonal active:opacity-90"
+                                        : "bg-action-blue active:bg-action-blue-hover"
                                         }`}
                                 >
                                     {loading ? "Επεξεργασία..." : success ? "Πληρωμένο" : "Πληρωμή"}
