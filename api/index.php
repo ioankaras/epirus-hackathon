@@ -1,152 +1,190 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Headers: Content-Type, X-Device-Id');
 
-$accounts = [
-    [
-        'id' => 'a1001',
-        'name' => 'Main Checking',
-        'accountNumber' => 'GR16 0110 1250 0000 0001 2300 695',
-        'balance' => 4821.50,
-        'currency' => 'EUR',
-        'lastUpdated' => '2026-05-22T08:00:00Z',
-    ],
-    [
-        'id' => 'a1002',
-        'name' => 'Savings Account',
-        'accountNumber' => 'GR16 0110 1250 0000 0001 2300 696',
-        'balance' => 12340.00,
-        'currency' => 'EUR',
-        'lastUpdated' => '2026-05-21T18:30:00Z',
-    ],
-    [
-        'id' => 'a1003',
-        'name' => 'Business Account',
-        'accountNumber' => 'GR16 0110 1250 0000 0001 2300 697',
-        'balance' => 31500.75,
-        'currency' => 'EUR',
-        'lastUpdated' => '2026-05-22T09:15:00Z',
-    ],
-];
+require __DIR__ . '/db.php';
 
-$contacts = [
-    ['id' => 'c1001', 'name' => 'Nikos Papadopoulos', 'accountNumber' => 'GR16 0110 1250 0000 0002 1000 001', 'initials' => 'NP'],
-    ['id' => 'c1002', 'name' => 'Maria Georgiou',     'accountNumber' => 'GR16 0110 1250 0000 0002 1000 002', 'initials' => 'MG'],
-    ['id' => 'c1003', 'name' => 'Dimitris Alexiou',   'accountNumber' => 'GR16 0110 1250 0000 0002 1000 003', 'initials' => 'DA'],
-    ['id' => 'c1004', 'name' => 'Sofia Thanou',       'accountNumber' => 'GR16 0110 1250 0000 0002 1000 004', 'initials' => 'ST'],
-    ['id' => 'c1005', 'name' => 'Kostas Pappas',      'accountNumber' => 'GR16 0110 1250 0000 0002 1000 005', 'initials' => 'KP'],
-    ['id' => 'c1006', 'name' => 'Elena Vasileiou',    'accountNumber' => 'GR16 0110 1250 0000 0002 1000 006', 'initials' => 'EV'],
-    ['id' => 'c1007', 'name' => 'Yannis Stavrou',     'accountNumber' => 'GR16 0110 1250 0000 0002 1000 007', 'initials' => 'YS'],
-    ['id' => 'c1008', 'name' => 'Anna Makri',         'accountNumber' => 'GR16 0110 1250 0000 0002 1000 008', 'initials' => 'AM'],
-    ['id' => 'c1009', 'name' => 'Petros Nikolaou',    'accountNumber' => 'GR16 0110 1250 0000 0002 1000 009', 'initials' => 'PN'],
-    ['id' => 'c1010', 'name' => 'Chrysa Lamprou',     'accountNumber' => 'GR16 0110 1250 0000 0002 1000 010', 'initials' => 'CL'],
-];
-
-$bills = [
-    ['id' => 'b1001', 'provider' => 'DEH',          'amount' => 87.40,  'currency' => 'EUR', 'dueDate' => '2026-06-05', 'status' => 'unpaid', 'category' => 'electricity', 'rf' => 'RF12 3456 7890 1234'],
-    ['id' => 'b1002', 'provider' => 'EYDAP',        'amount' => 32.10,  'currency' => 'EUR', 'dueDate' => '2026-06-10', 'status' => 'unpaid', 'category' => 'water',       'rf' => 'RF23 4567 8901 2345'],
-    ['id' => 'b1003', 'provider' => 'Cosmote',      'amount' => 49.99,  'currency' => 'EUR', 'dueDate' => '2026-05-28', 'status' => 'unpaid', 'category' => 'phone',       'rf' => 'RF34 5678 9012 3456'],
-    ['id' => 'b1004', 'provider' => 'Vodafone',     'amount' => 29.99,  'currency' => 'EUR', 'dueDate' => '2026-05-30', 'status' => 'paid',   'category' => 'internet',    'rf' => 'RF45 6789 0123 4567'],
-    ['id' => 'b1005', 'provider' => 'EDA Attikis',  'amount' => 61.80,  'currency' => 'EUR', 'dueDate' => '2026-06-15', 'status' => 'unpaid', 'category' => 'gas',         'rf' => 'RF56 7890 1234 5678'],
-    ['id' => 'b1006', 'provider' => 'DEH',          'amount' => 74.20,  'currency' => 'EUR', 'dueDate' => '2026-05-01', 'status' => 'paid',   'category' => 'electricity', 'rf' => 'RF67 8901 2345 6789'],
-    ['id' => 'b1007', 'provider' => 'Wind',         'amount' => 39.99,  'currency' => 'EUR', 'dueDate' => '2026-06-20', 'status' => 'unpaid', 'category' => 'internet',    'rf' => 'RF78 9012 3456 7890'],
-    ['id' => 'b1008', 'provider' => 'EYDAP',        'amount' => 28.60,  'currency' => 'EUR', 'dueDate' => '2026-04-30', 'status' => 'paid',   'category' => 'water',       'rf' => 'RF89 0123 4567 8901'],
-    ['id' => 'b1009', 'provider' => 'Nova',         'amount' => 54.99,  'currency' => 'EUR', 'dueDate' => '2026-06-01', 'status' => 'unpaid', 'category' => 'phone',       'rf' => 'RF90 1234 5678 9012'],
-    ['id' => 'b1010', 'provider' => 'EDA Attikis',  'amount' => 55.30,  'currency' => 'EUR', 'dueDate' => '2026-05-10', 'status' => 'paid',   'category' => 'gas',         'rf' => 'RF01 2345 6789 0123'],
-];
-
-$accountIds   = ['a1001', 'a1002', 'a1003'];
-$contactNames = array_column($contacts, 'name');
-
-$txDescriptions = [
-    'debit'  => [
-        'Supermarket purchase', 'Coffee shop', 'Online shopping', 'Fuel station',
-        'Restaurant dinner', 'Pharmacy', 'Gym membership', 'Streaming subscription',
-        'Utility payment', 'ATM withdrawal', 'Public transport', 'Bookstore',
-        'Transfer to contact', 'Insurance premium', 'Mobile top-up',
-    ],
-    'credit' => [
-        'Salary deposit', 'Freelance payment', 'Transfer received', 'Refund',
-        'Bonus payment', 'Dividend', 'Rental income', 'Client invoice paid',
-    ],
-];
-
-$transactions = [];
-$baseDate = new DateTime('2026-05-22');
-
-for ($i = 1; $i <= 100; $i++) {
-    $type      = ($i % 3 === 0) ? 'credit' : 'debit';
-    $accountId = $accountIds[($i - 1) % 3];
-    $descList  = $txDescriptions[$type];
-    $desc      = $descList[($i - 1) % count($descList)];
-    $amount    = round(5 + ($i * 7.37) % 995, 2);
-    $daysAgo   = ($i - 1) % 90;
-    $date      = (clone $baseDate)->modify("-{$daysAgo} days")->format('Y-m-d');
-    $recipient = null;
-
-    if ($type === 'debit' && str_contains($desc, 'contact')) {
-        $recipient = $contactNames[($i - 1) % count($contactNames)];
-    } elseif ($type === 'credit' && in_array($desc, ['Transfer received', 'Client invoice paid', 'Freelance payment'])) {
-        $recipient = $contactNames[($i - 1) % count($contactNames)];
-    }
-
-    $tx = [
-        'id'          => sprintf('t%04d', $i),
-        'type'        => $type,
-        'description' => $desc,
-        'amount'      => $amount,
-        'currency'    => 'EUR',
-        'date'        => $date,
-        'accountId'   => $accountId,
-    ];
-
-    if ($recipient !== null) {
-        $tx['recipient'] = $recipient;
-    }
-
-    $transactions[] = $tx;
+$uid = (int) ($_SERVER['HTTP_X_DEVICE_ID'] ?? 1);
+if ($uid <= 0) {
+    $uid = 1;
 }
 
-$path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-$path = rtrim($path, '/');
+$db     = get_db();
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$path   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$path   = rtrim($path, '/');
 
-// Individual account: /accounts/{id}
-if (preg_match('#^/accounts/(a\d{4})$#', $path, $m)) {
-    $found = array_values(array_filter($accounts, fn($a) => $a['id'] === $m[1]));
-    if (empty($found)) {
+// POST /api/transfer
+if ($path === '/api/transfer' && $method === 'POST') {
+    $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+    $fromAccount = $body['fromAccount'] ?? null;
+    $toAccount   = $body['toAccount']   ?? null;
+    $amount      = $body['amount']      ?? null;
+
+    if ($fromAccount === null || $toAccount === null || $amount === null) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing required fields: fromAccount, toAccount, amount']);
+        exit;
+    }
+
+    $amount = (int) $amount / 100;
+    if ($amount <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Amount must be greater than zero']);
+        exit;
+    }
+
+    // Verify fromAccount belongs to the caller
+    $stmtFrom = $db->prepare('SELECT id, balance FROM accounts WHERE id = :id AND user_id = :uid');
+    $stmtFrom->execute([':id' => $fromAccount, ':uid' => $uid]);
+    $sender = $stmtFrom->fetch();
+    if (!$sender) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Account does not belong to you']);
+        exit;
+    }
+
+    // Verify toAccount exists
+    $stmtTo = $db->prepare('SELECT id FROM accounts WHERE id = :id');
+    $stmtTo->execute([':id' => $toAccount]);
+    if (!$stmtTo->fetch()) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Destination account not found']);
+        exit;
+    }
+
+    // Verify sufficient balance
+    if ($sender['balance'] < $amount) {
+        http_response_code(422);
+        echo json_encode(['error' => 'Insufficient balance']);
+        exit;
+    }
+
+    // Atomic transfer
+    $now  = (new DateTime())->format('Y-m-d\TH:i:s\Z');
+    $date = (new DateTime())->format('Y-m-d');
+
+    $db->beginTransaction();
+    try {
+        $db->prepare('UPDATE accounts SET balance = balance - :amt, last_updated = :now WHERE id = :id')
+           ->execute([':amt' => $amount, ':now' => $now, ':id' => $fromAccount]);
+
+        $db->prepare('UPDATE accounts SET balance = balance + :amt, last_updated = :now WHERE id = :id')
+           ->execute([':amt' => $amount, ':now' => $now, ':id' => $toAccount]);
+
+        // Debit tx for sender
+        $txDebitId = 'tx' . uniqid();
+        $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
+                      VALUES (:id, :aid, :uid, "debit", "Transfer sent", :amt, "EUR", :date, :to)')
+           ->execute([':id' => $txDebitId, ':aid' => $fromAccount, ':uid' => $uid,
+                      ':amt' => $amount, ':date' => $date, ':to' => $toAccount]);
+
+        // Credit tx for receiver (look up receiver's user_id)
+        $receiverUid = $db->prepare('SELECT user_id FROM accounts WHERE id = :id');
+        $receiverUid->execute([':id' => $toAccount]);
+        $receiverRow = $receiverUid->fetch();
+
+        $txCreditId = 'tx' . uniqid();
+        $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
+                      VALUES (:id, :aid, :uid, "credit", "Transfer received", :amt, "EUR", :date, :from)')
+           ->execute([':id' => $txCreditId, ':aid' => $toAccount, ':uid' => $receiverRow['user_id'],
+                      ':amt' => $amount, ':date' => $date, ':from' => $fromAccount]);
+
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        http_response_code(500);
+        echo json_encode(['error' => 'Transfer failed']);
+        exit;
+    }
+
+    // Return updated sender account
+    $stmtUpdated = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, currency, last_updated AS lastUpdated FROM accounts WHERE id = :id');
+    $stmtUpdated->execute([':id' => $fromAccount]);
+    echo json_encode($stmtUpdated->fetch(), JSON_PRETTY_PRINT);
+    exit;
+}
+
+// Transactions for an account: /api/accounts/{id}/transactions
+if (preg_match('#^/api/accounts/(a\d+)/transactions$#', $path, $m)) {
+    $check = $db->prepare('SELECT id FROM accounts WHERE id = :id AND user_id = :uid');
+    $check->execute([':id' => $m[1], ':uid' => $uid]);
+    if (!$check->fetch()) {
         http_response_code(404);
         echo json_encode(['error' => 'Account not found']);
+        exit;
+    }
+    $stmt = $db->prepare('SELECT id, type, description, amount, currency, date, account_id AS accountId, recipient FROM transactions WHERE account_id = :aid AND user_id = :uid ORDER BY date DESC');
+    $stmt->execute([':aid' => $m[1], ':uid' => $uid]);
+    $rows = $stmt->fetchAll();
+    foreach ($rows as &$row) {
+        if ($row['recipient'] === null) {
+            unset($row['recipient']);
+        }
+    }
+    echo json_encode(array_values($rows), JSON_PRETTY_PRINT);
+    exit;
+}
+
+// Single account (by X-Device-Id): /api/accounts
+if ($path === '/api/accounts') {
+    $stmt = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, currency, last_updated AS lastUpdated FROM accounts WHERE user_id = :uid LIMIT 1');
+    $stmt->execute([':uid' => $uid]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Account not found']);
+        exit;
+    }
+    echo json_encode($row, JSON_PRETTY_PRINT);
+    exit;
+}
+
+// All transactions: /api/transactions
+if ($path === '/api/transactions') {
+    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.currency, t.date, t.account_id AS accountId, t.recipient FROM transactions t WHERE t.user_id = :uid ORDER BY t.date DESC');
+    $stmt->execute([':uid' => $uid]);
+    $rows = $stmt->fetchAll();
+    foreach ($rows as &$row) {
+        if ($row['recipient'] === null) {
+            unset($row['recipient']);
+        }
+    }
+    echo json_encode(array_values($rows), JSON_PRETTY_PRINT);
+    exit;
+}
+
+// Single contact: /api/contacts/{id}
+if (preg_match('#^/api/contacts/(\d+)$#', $path, $m)) {
+    $stmt = $db->prepare('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id WHERE c.id = :id');
+    $stmt->execute([':id' => (int) $m[1]]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Contact not found']);
     } else {
-        echo json_encode($found[0], JSON_PRETTY_PRINT);
+        echo json_encode($row, JSON_PRETTY_PRINT);
     }
     exit;
 }
 
-// Transactions filtered by account: /accounts/{id}/transactions
-if (preg_match('#^/accounts/(a\d{4})/transactions$#', $path, $m)) {
-    $exists = array_filter($accounts, fn($a) => $a['id'] === $m[1]);
-    if (empty($exists)) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Account not found']);
-    } else {
-        $filtered = array_values(array_filter($transactions, fn($t) => $t['accountId'] === $m[1]));
-        echo json_encode($filtered, JSON_PRETTY_PRINT);
-    }
+// All contacts (global, unscoped): /api/contacts
+if ($path === '/api/contacts') {
+    $stmt = $db->query('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id ORDER BY c.id');
+    echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
     exit;
 }
 
-$routes = [
-    '/api/accounts'     => $accounts,
-    '/api/transactions' => $transactions,
-    '/api/contacts'     => $contacts,
-    '/api/bills'        => $bills,
-];
-
-if (array_key_exists($path, $routes)) {
-    echo json_encode($routes[$path], JSON_PRETTY_PRINT);
-} else {
-    http_response_code(404);
-    echo json_encode(['error' => 'Not found', 'available' => ['/accounts', '/transactions', '/contacts', '/bills']]);
+// Bills: /api/bills
+if ($path === '/api/bills') {
+    $stmt = $db->prepare('SELECT id, provider, amount, currency, due_date AS dueDate, status, category, rf FROM bills WHERE user_id = :uid');
+    $stmt->execute([':uid' => $uid]);
+    echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
+    exit;
 }
+
+http_response_code(404);
+echo json_encode(['error' => 'Not found', 'available' => ['/api/accounts', '/api/transactions', '/api/contacts', '/api/bills', '/api/transfer']]);
