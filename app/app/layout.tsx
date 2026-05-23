@@ -4,6 +4,7 @@ import BankProvider from "@/components/providers/BankProvider";
 import DeviceIdRegistrar from "@/components/providers/DeviceIdRegistrar";
 import ServiceWorkerRegistrar from "@/components/providers/ServiceWorkerRegistrar";
 import SpeechChatShell from "@/components/speech/SpeechChatShell";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "My Bank",
@@ -31,13 +32,14 @@ export default function RootLayout({
   return (
     <html lang="el" className="h-full">
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <BankProvider>
-          <DeviceIdRegistrar />
-          <ServiceWorkerRegistrar />
-          <SpeechChatShell>
-            <main className="flex-1 pb-20">{children}</main>
-          </SpeechChatShell>
-        </BankProvider>
+        <Suspense>
+          <BankProvider>
+            <ServiceWorkerRegistrar />
+            <SpeechChatShell>
+              <main className="flex-1 pb-20">{children}</main>
+            </SpeechChatShell>
+          </BankProvider>
+        </Suspense>
       </body>
     </html>
   );

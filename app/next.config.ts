@@ -9,6 +9,25 @@ const nextConfig: NextConfig = {
       {
         source: "/mock-api/:path*",
         destination: `${apiBase}/mock-api/:path*`,
+      }
+    ]
+  },
+  async headers() {
+    return [
+      {
+        // Permissions-Policy lets the browser know mic is used;
+        // HSTS enforces HTTPS so getUserMedia isn't blocked on mobile.
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "microphone=*",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
       },
     ];
   },

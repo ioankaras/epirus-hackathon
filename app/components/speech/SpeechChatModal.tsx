@@ -21,7 +21,7 @@ function AudioMessageBubble({
     <div className="flex justify-end">
       <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary-navy px-4 py-3 text-white">
         <p className="text-base text-white">
-          {message.transcript ?? "Voice message"}
+          {message.transcript ?? "Φωνητικό μήνυμα"}
         </p>
         {statusLabel && (
           <p
@@ -44,10 +44,10 @@ function AssistantLoadingBubble() {
     <div className="flex justify-start">
       <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-surface px-4 py-3 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-wide text-text-secondary">
-          Assistant
+          Βοηθός
         </p>
         <p className="mt-1 text-base text-text-secondary">
-          Waiting for response…
+          Αναμονή για απάντηση…
         </p>
       </div>
     </div>
@@ -63,7 +63,7 @@ function AssistantMessageBubble({
     <div className="flex justify-start">
       <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-surface px-4 py-3 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-wide text-text-secondary">
-          Assistant
+          Βοηθός
         </p>
         <p className="mt-1 text-base text-primary-navy">{message.text}</p>
       </div>
@@ -111,11 +111,20 @@ export default function SpeechChatModal() {
 
   const handleRecordToggle = useCallback(async () => {
     stopPlayback();
+    // On iOS Safari and Chrome Android, speechSynthesis.speak() only works
+    // from async contexts if the engine was previously unlocked by a speak()
+    // call inside a user gesture. Prime it here (synchronously, before the
+    // first await) when starting a recording so the reply TTS works later.
+    if (!isRecording && typeof window !== "undefined" && window.speechSynthesis) {
+      const unlock = new SpeechSynthesisUtterance(" ");
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
     const blob = await toggleRecording();
     if (blob) {
       await sendAudio(blob);
     }
-  }, [toggleRecording, sendAudio, stopPlayback]);
+  }, [toggleRecording, sendAudio, isRecording]);
 
   if (!isOpen) return null;
 
@@ -146,10 +155,10 @@ export default function SpeechChatModal() {
                 id="speech-chat-title"
                 className="text-base font-bold text-primary-navy leading-tight"
               >
-                AI Assistant
+                Βοηθός ΑΙ
               </h2>
               <p className="text-xs text-text-secondary leading-tight">
-                Voice banking assistant
+                Ψηφιακός τραπεζικός βοηθός
               </p>
             </div>
             <button
@@ -172,7 +181,7 @@ export default function SpeechChatModal() {
 
           {/* Row 2: read replies toggle */}
           <div className="mt-4 flex items-center gap-2 pl-12">
-            <span className="text-xs text-text-secondary select-none">Read replies</span>
+            <span className="text-xs text-text-secondary select-none">Ανάγνωση απαντήσεων</span>
             <button
               type="button"
               role="switch"
@@ -194,7 +203,7 @@ export default function SpeechChatModal() {
         <div className="flex-1 overflow-y-auto px-4 py-3">
           {messages.length === 0 ? (
             <p className="text-center text-base text-text-secondary">
-              Tap the microphone to send a voice message.
+              Πατήστε το μικρόφωνο για να στείλετε ένα φωνητικό μήνυμα
             </p>
           ) : (
             <div className="flex flex-col gap-3">
@@ -222,7 +231,7 @@ export default function SpeechChatModal() {
           )}
           {status === "requesting" && (
             <p className="mb-3 text-sm text-text-secondary">
-              Allow microphone access…
+              Επιτρέψτε πρόσβαση στο μικρόφωνο…
             </p>
           )}
           <div className="flex items-center justify-center">
@@ -231,7 +240,7 @@ export default function SpeechChatModal() {
               onClick={() => void handleRecordToggle()}
               disabled={status === "requesting" || isAwaitingReply}
               aria-label={
-                isRecording ? "Stop recording and send" : "Start recording"
+                isRecording ? "Διακοπή ηχογράφησης και αποστολή" : "Start recording"
               }
               className={
                 isRecording
@@ -260,10 +269,10 @@ export default function SpeechChatModal() {
           </div>
           <p className="mt-3 text-center text-sm text-text-secondary">
             {isAwaitingReply
-              ? "Waiting for assistant…"
+              ? "Αναμονή για βοηθό…"
               : isRecording
-                ? "Tap to stop and send"
-                : "Tap to record a voice message"}
+                ? "Πατήστε για διακοπή και αποστολή"
+                : "Πατήστε για να ηχογραφήσετε ένα φωνητικό μήνυμα"}
           </p>
         </footer>
       </div>

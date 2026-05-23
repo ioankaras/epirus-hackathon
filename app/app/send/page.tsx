@@ -152,7 +152,12 @@ export default function SendPage() {
               />
               {account && (
                 <p className="text-base text-text-secondary">
-                  Διαθέσιμο: {formatCurrency(account.balance)}
+                  Διαθέσιμο υπόλοιπο: {formatCurrency(account.balance)}
+                </p>
+              )}
+              {amountValid && account && parsedAmount > account.balance && (
+                <p className="text-accent-red text-base font-medium">
+                  Το ποσό υπερβαίνει το διαθέσιμο υπόλοιπό σας ({formatCurrency(account.balance)}).
                 </p>
               )}
               <div className="flex gap-3 mt-4">
