@@ -22,9 +22,19 @@ type SpeechChatContextValue = {
   setReadAloudEnabled: (enabled: boolean) => void;
   sendAudio: (audioBlob: Blob) => Promise<void>;
   stopPlayback: () => void;
+  primeAudio: () => void;
 };
 
 const SpeechChatContext = createContext<SpeechChatContextValue | null>(null);
+
+// Module-level: not tracked by React Compiler, appropriate for a transient
+// Audio element that exists purely to unlock iOS/Android autoplay in the same
+// gesture that starts recording.
+let _primedAudio: HTMLAudioElement | null = null;
+
+// Shortest valid silent WAV (0 samples). Used to unlock an Audio element via
+// a user gesture so that setting .src + play() works later without a gesture.
+const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
 
 function createId() {
   return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -52,6 +62,12 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
     }
     abortRef.current?.abort();
     abortRef.current = null;
+  }, []);
+
+  const primeAudio = useCallback(() => {
+    const audio = new Audio(SILENT_WAV);
+    _primedAudio = audio;
+    void audio.play().catch(() => {});
   }, []);
 
   const close = useCallback(() => {
@@ -156,7 +172,9 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
               },
             ]);
             if (readAloudEnabled && transcribeData.audioBase64) {
-              const audio = new Audio(`data:audio/mpeg;base64,${transcribeData.audioBase64}`);
+              const audio = _primedAudio ?? new Audio();
+              _primedAudio = null;
+              audio.src = `data:audio/mpeg;base64,${transcribeData.audioBase64}`;
               audioRef.current = audio;
               void audio.play();
             }
@@ -192,8 +210,9 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
       setReadAloudEnabled,
       sendAudio,
       stopPlayback,
+      primeAudio,
     }),
-    [isOpen, open, close, messages, isAwaitingReply, readAloudEnabled, sendAudio, stopPlayback],
+    [isOpen, open, close, messages, isAwaitingReply, readAloudEnabled, sendAudio, stopPlayback, primeAudio],
   );
 
   return (

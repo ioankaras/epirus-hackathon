@@ -109,6 +109,7 @@ export default function SpeechChatModal() {
     setReadAloudEnabled,
     sendAudio,
     stopPlayback,
+    primeAudio,
   } = useSpeechChat();
   const router = useRouter();
   const { status, errorMessage, isRecording, toggleRecording, stopRecording } =
@@ -156,11 +157,15 @@ export default function SpeechChatModal() {
 
   const handleRecordToggle = useCallback(async () => {
     stopPlayback();
+    // iOS Safari blocks audio.play() outside a user gesture. Call primeAudio()
+    // synchronously here (before any await) to unlock an Audio element that
+    // sendAudio will reuse when the TTS response arrives.
+    primeAudio();
     const blob = await toggleRecording();
     if (blob) {
       await sendAudio(blob);
     }
-  }, [toggleRecording, sendAudio, stopPlayback]);
+  }, [toggleRecording, sendAudio, stopPlayback, primeAudio]);
 
   if (!isOpen) return null;
 
