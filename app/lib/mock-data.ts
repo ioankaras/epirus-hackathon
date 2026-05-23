@@ -7,6 +7,7 @@ export const account: Account = {
   balance: 12224.65,
   currency: "EUR",
   lastUpdated: new Date().toISOString(),
+  owner: "Μαρία"
 };
 
 export const transactions: Transaction[] = [
