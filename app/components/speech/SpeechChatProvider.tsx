@@ -30,10 +30,13 @@ function createId() {
 
 function speakText(text: string) {
   if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  const synth = window.speechSynthesis;
+  // Guard cancel: calling cancel() on an idle engine corrupts its state on
+  // iOS Safari and Chrome Android, causing subsequent speak() to be ignored.
+  if (synth.speaking || synth.pending) synth.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = document.documentElement.lang || "el-GR";
-  window.speechSynthesis.speak(utterance);
+  synth.speak(utterance);
 }
 
 export function SpeechChatProvider({ children }: { children: ReactNode }) {
