@@ -19,6 +19,7 @@ export async function getDeviceId(): Promise<string> {
   const id = String(data.deviceId);
   localStorage.setItem(STORAGE_KEY, id);
   cachedDeviceId = id;
+  console.log("[device-id] registered:", id);
   return id;
 }
 

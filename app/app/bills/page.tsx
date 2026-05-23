@@ -164,7 +164,7 @@ export default function BillsPage() {
             <span className="text-lg font-semibold">Σκανάρισμα</span>
           </button>
           {scanError && (
-            <p className="text-accent-red text-sm text-center max-w-xs">{scanError}</p>
+            <p className="text-accent-red text-base text-center max-w-xs">{scanError}</p>
           )}
           <button
             onClick={() => setShowScanGuide(true)}
@@ -229,16 +229,16 @@ export default function BillsPage() {
                       <div key={i} className="bg-primary-navy rounded-sm h-full" style={{ width: `${w * 3}px` }} />
                     ))}
                   </div>
-                  <p className="text-sm font-semibold text-primary-navy">Γραμμωτός κωδικός</p>
-                  <p className="text-xs text-text-secondary text-center">Κάθετες γραμμές, συνήθως στο πάνω μέρος του λογαριασμού</p>
+                  <p className="text-base font-semibold text-primary-navy">Γραμμωτός κωδικός</p>
+                  <p className="text-sm text-text-secondary text-center">Κάθετες γραμμές, συνήθως στο πάνω μέρος του λογαριασμού</p>
                 </div>
                 <div className="flex flex-col items-center gap-2 mt-4">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-primary-navy">
                     <path d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
                     <path d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75V16.5ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
                   </svg>
-                  <p className="text-sm font-semibold text-primary-navy">QR κωδικός</p>
-                  <p className="text-xs text-text-secondary text-center">Τετράγωνο με μικρά τετράγωνα μέσα</p>
+                  <p className="text-base font-semibold text-primary-navy">QR κωδικός</p>
+                  <p className="text-sm text-text-secondary text-center">Τετράγωνο με μικρά τετράγωνα μέσα</p>
                 </div>
               </div>
               <p className="text-base text-text-secondary leading-snug">Πατήστε <strong className="text-primary-navy">«Σκανάρισμα»</strong> και στρέψτε την κάμερα πάνω του. Κρατήστε το τηλέφωνο σταθερό.</p>
@@ -298,7 +298,7 @@ export default function BillsPage() {
                 stopCamera();
                 setScanning(false);
               }}
-              className="text-white/60 text-sm underline underline-offset-4"
+              className="text-white/60 text-base underline underline-offset-4"
             >
               Ακύρωση
             </button>

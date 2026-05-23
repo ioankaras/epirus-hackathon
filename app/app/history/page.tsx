@@ -54,7 +54,7 @@ export default function HistoryPage() {
                     <p className="text-base font-semibold text-primary-navy leading-tight">
                       {tx.description}
                     </p>
-                    <p className="text-sm text-text-secondary mt-1">
+                    <p className="text-base text-text-secondary mt-1">
                       {formatDate(tx.date)} &bull; {formatTime(tx.date)}
                     </p>
                   </div>

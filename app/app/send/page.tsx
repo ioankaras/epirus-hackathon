@@ -107,7 +107,7 @@ export default function SendPage() {
                     <p className="text-lg font-semibold text-primary-navy">
                       {contact.name}
                     </p>
-                    <p className="text-sm text-text-secondary truncate">
+                    <p className="text-base text-text-secondary truncate">
                       {contact.accountNumber}
                     </p>
                   </div>
@@ -222,7 +222,7 @@ export default function SendPage() {
                 fullWidth
                 onClick={() => setStep("amount")}
               >
-                Back
+                Πίσω
               </Button>
               <Button fullWidth loading={submitting} onClick={handleSubmit} className="text-base">
                 Αποστολή

@@ -69,6 +69,15 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
   const close = useCallback(() => {
     setIsOpen(false);
     stopPlayback();
+    setMessages((prev) =>
+      prev
+        .filter((m) => m.kind !== "loading")
+        .map((m) =>
+          m.role === "user" && "status" in m && m.status === "sending"
+            ? { ...m, status: "sent" as const }
+            : m,
+        ),
+    );
   }, [stopPlayback]);
 
   const sendAudio = useCallback(

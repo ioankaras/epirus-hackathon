@@ -95,10 +95,10 @@ export default function VoiceButton() {
         disabled={isDisabled}
         aria-label={
           status === "idle"
-            ? "Start voice command"
+            ? "Έναρξη φωνητικής εντολής"
             : status === "recording"
-            ? "Stop recording"
-            : "Processing"
+            ? "Διακοπή ηχογράφησης"
+            : "Επεξεργασία"
         }
         className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-1 select-none"
       >
@@ -153,7 +153,7 @@ export default function VoiceButton() {
         </span>
 
         <span
-          className={`text-xs font-semibold ${
+          className={`text-sm font-semibold ${
             status === "recording"
               ? "text-accent-red"
               : status === "error"

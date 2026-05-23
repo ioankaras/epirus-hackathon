@@ -61,8 +61,8 @@ export default function BillPay() {
             if (!response.ok) {
                 setFeedback({
                     type: "error",
-                    title: "Payment Failed",
-                    message: data.error || "ψ",
+                    title: "Αποτυχία Πληρωμής",
+                    message: data.error || "Η πληρωμή απέτυχε",
                 });
                 setError(data.error || "Η πληρωμή απέτυχε")
             } else {
@@ -79,7 +79,7 @@ export default function BillPay() {
         } catch {
             setFeedback({
                 type: "error",
-                title: "Payment Failed",
+                title: "Αποτυχία Πληρωμής",
                 message: "Κάτι πήγε στραβά κατά την πληρωμή",
             });
             setError("Κάτι πήγε στραβά κατά την πληρωμή")
@@ -96,7 +96,7 @@ export default function BillPay() {
 
     return (
         <div>
-            <PageHeader title="Pay Bill" />
+            <PageHeader title="Πληρωμή Λογαριασμού" />
 
 
             {bill && (
