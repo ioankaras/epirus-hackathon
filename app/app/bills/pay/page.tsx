@@ -25,9 +25,9 @@ export default function BillPay() {
 
     useEffect(() => {
         if (rfCode) {
-            fetch("/api/bills").then(
-                res => res.json().then(data => {
-                    const foundBill = data.bills.find((b: Bill) => b.rf === rfCode)
+            fetch("/mock-api/bills").then(
+                res => res.json().then((data: Bill[]) => {
+                    const foundBill = data.find((b: Bill) => b.rf === rfCode)
 
                     if (foundBill) {
                         setBill(foundBill)
@@ -85,10 +85,10 @@ export default function BillPay() {
             setError("Κάτι πήγε στραβά κατά την πληρωμή")
         } finally {
             setLoading(false)
-            fetch("/api/bills").then(
-                res => res.json().then(data => {
-                    const foundBill = data.bills.find((b: Bill) => b.rf === rfCode)
-                    setBill(foundBill)
+            fetch("/mock-api/bills").then(
+                res => res.json().then((data: Bill[]) => {
+                    const foundBill = data.find((b: Bill) => b.rf === rfCode)
+                    setBill(foundBill ?? null)
                 })
             )
         }

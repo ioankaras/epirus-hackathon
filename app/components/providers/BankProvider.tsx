@@ -47,31 +47,31 @@ export default function BankProvider({
   const [loading, setLoading] = useState(true);
 
   const refreshAccount = useCallback(async () => {
-    const res = await fetch("/api/account");
+    const res = await fetch("/mock-api/accounts");
     const data = await res.json();
-    setAccount(data);
+    setAccount(data[0]);
   }, []);
 
   const refreshTransactions = useCallback(async () => {
-    const res = await fetch("/api/transactions");
+    const res = await fetch("/mock-api/transactions");
     const data = await res.json();
-    setTransactions(data.transactions);
+    setTransactions(data);
   }, []);
 
   const refreshBills = useCallback(async () => {
-    const res = await fetch("/api/bills");
+    const res = await fetch("/mock-api/bills");
     const data = await res.json();
-    setBills(data.bills);
+    setBills(data);
   }, []);
 
   useEffect(() => {
     async function load() {
       try {
         const [accRes, txRes, contactsRes, billsRes] = await Promise.all([
-          fetch("/api/account"),
-          fetch("/api/transactions"),
-          fetch("/api/contacts"),
-          fetch("/api/bills"),
+          fetch("/mock-api/accounts"),
+          fetch("/mock-api/transactions"),
+          fetch("/mock-api/contacts"),
+          fetch("/mock-api/bills"),
         ]);
         const [accData, txData, contactsData, billsData] = await Promise.all([
           accRes.json(),
@@ -79,12 +79,12 @@ export default function BankProvider({
           contactsRes.json(),
           billsRes.json(),
         ]);
-        setAccount(accData);
-        setTransactions(txData.transactions);
-        setContacts(contactsData.contacts);
-        setBills(billsData.bills);
+        setAccount(accData[0]);
+        setTransactions(txData);
+        setContacts(contactsData);
+        setBills(billsData);
       } catch {
-        // Mock data will be served by API routes
+        // Data will be served by API routes
       } finally {
         setLoading(false);
       }

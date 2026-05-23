@@ -78,9 +78,9 @@ export default function BillsPage() {
           stopCamera();
           setScanning(false);
 
-          const billResponse = await (await fetch("/api/bills")).json()
+          const billResponse: Bill[] = await (await fetch("/mock-api/bills")).json()
 
-          if (!billResponse.bills.some((b: Bill) => b.rf === detected)) {
+          if (!billResponse.some((b: Bill) => b.rf === detected)) {
             setFeedback({
               type: "error",
               title: "Αποτυχία σκαναρίσματος",
@@ -106,8 +106,8 @@ export default function BillsPage() {
     if (!code) return;
     setSubmitting(true);
     try {
-      const billResponse = await (await fetch("/api/bills")).json();
-      if (!billResponse.bills.some((b: Bill) => b.rf === code)) {
+      const billResponse: Bill[] = await (await fetch("/mock-api/bills")).json();
+      if (!billResponse.some((b: Bill) => b.rf === code)) {
         setFeedback({
           type: "error",
           title: "Μη έγκυρος κωδικός",

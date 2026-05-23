@@ -15,6 +15,7 @@ export interface Transaction {
   currency: string;
   date: string;
   recipient?: string;
+  accountId?: string;
 }
 
 export interface Contact {
