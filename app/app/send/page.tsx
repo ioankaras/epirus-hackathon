@@ -50,6 +50,7 @@ export default function SendPage() {
           fromAccount: account?.id,
           amount: parsedAmount,
           toAccount: selectedContact.accountId,
+          description
         }),
       });
       if (res.ok) {

@@ -48,12 +48,11 @@ export default function BillPay() {
         setError(null)
 
         try {
-            const response = await fetch("/mock-api/bills", {
+            const response = await fetch("/mock-api/payments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ billId: bill.rf }),
+                }
             })
 
             const data = await response.json()
@@ -134,7 +133,7 @@ export default function BillPay() {
                             <div className="flex items-end justify-between">
                                 <div>
                                     <p className="text-gray-600">Κατάσταση</p>
-                                    {bill.status === "paid" ? <p className="text-lg font-semibold text-green-600">Πληρωμένο</p> : <p className="text-lg font-semibold text-yellow-600">Εκκρεμεί</p>}
+                                    {success ? <p className="text-lg font-semibold text-green-600">Πληρωμένο</p> : <p className="text-lg font-semibold text-yellow-600">Εκκρεμεί</p>}
                                 </div>
                                 <button
                                     onClick={handlePayment}
