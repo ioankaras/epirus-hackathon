@@ -156,20 +156,11 @@ export default function SpeechChatModal() {
 
   const handleRecordToggle = useCallback(async () => {
     stopPlayback();
-    // On iOS Safari and Chrome Android, speechSynthesis.speak() only works
-    // from async contexts if the engine was previously unlocked by a speak()
-    // call inside a user gesture. Prime it here (synchronously, before the
-    // first await) when starting a recording so the reply TTS works later.
-    if (!isRecording && typeof window !== "undefined" && window.speechSynthesis) {
-      const unlock = new SpeechSynthesisUtterance(" ");
-      unlock.volume = 0;
-      window.speechSynthesis.speak(unlock);
-    }
     const blob = await toggleRecording();
     if (blob) {
       await sendAudio(blob);
     }
-  }, [toggleRecording, sendAudio, isRecording]);
+  }, [toggleRecording, sendAudio, stopPlayback]);
 
   if (!isOpen) return null;
 

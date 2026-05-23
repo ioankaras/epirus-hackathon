@@ -131,7 +131,23 @@ export async function POST(request: Request) {
       ? "Ας ανοίξουμε την κάμερα για να σκανάρετε τον λογαριασμό σας."
       : "");
 
-    return Response.json({ success: true, transcript, reply: finalReply, responseId: response.id, actions });
+    let audioBase64: string | null = null;
+    if (finalReply) {
+      try {
+        const speechResponse = await openai.audio.speech.create({
+          model: "gpt-4o-mini-tts",
+          voice: "alloy",
+          input: finalReply,
+          instructions: "Speak in fluent Greek with a natural Greek accent. Pronounce all words as a native Greek speaker would.",
+        });
+        const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+        audioBase64 = audioBuffer.toString("base64");
+      } catch (ttsErr) {
+        console.error("TTS error (non-fatal):", ttsErr);
+      }
+    }
+
+    return Response.json({ success: true, transcript, reply: finalReply, responseId: response.id, actions, audioBase64 });
   } catch (e) {
     console.error("Transcribe/chat error:", e);
     return Response.json(

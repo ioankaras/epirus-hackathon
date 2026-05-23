@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { getAudioFileExtension } from "@/lib/speech/audio-utils";
-import type { ChatMessage, SpeechChatResponse } from "@/lib/speech/types";
+import type { ChatMessage } from "@/lib/speech/types";
 
 type SpeechChatContextValue = {
   isOpen: boolean;
@@ -30,29 +30,13 @@ function createId() {
   return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function speakText(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  const synth = window.speechSynthesis;
-  // Guard cancel: calling cancel() on an idle engine corrupts its state on
-  // iOS Safari and Chrome Android, causing subsequent speak() to be ignored.
-  if (synth.speaking || synth.pending) synth.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = document.documentElement.lang || "el-GR";
-  synth.speak(utterance);
-}
-
-function cancelSpeech() {
-  if (typeof window !== "undefined") {
-    window.speechSynthesis?.cancel();
-  }
-}
-
 export function SpeechChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [readAloudEnabled, setReadAloudEnabled] = useState(true);
   const [responseId, setResponseId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const isAwaitingReply = messages.some(
     (message) => message.role === "assistant" && message.kind === "loading",
@@ -61,7 +45,11 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
   const open = useCallback(() => setIsOpen(true), []);
 
   const stopPlayback = useCallback(() => {
-    cancelSpeech();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
     abortRef.current?.abort();
     abortRef.current = null;
   }, []);
@@ -84,8 +72,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
     async (audioBlob: Blob) => {
       if (audioBlob.size === 0) return;
 
-      cancelSpeech();
-      abortRef.current?.abort();
+      stopPlayback();
       const controller = new AbortController();
       abortRef.current = controller;
 
@@ -133,6 +120,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
             reply?: string | null;
             responseId?: string | null;
             actions?: string[];
+            audioBase64?: string | null;
           };
 
           const text = transcribeData.transcript?.trim();
@@ -167,7 +155,11 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
                 ...(transcribeData.actions?.length ? { actions: transcribeData.actions } : {}),
               },
             ]);
-            if (readAloudEnabled) speakText(reply);
+            if (readAloudEnabled && transcribeData.audioBase64) {
+              const audio = new Audio(`data:audio/mpeg;base64,${transcribeData.audioBase64}`);
+              audioRef.current = audio;
+              void audio.play();
+            }
             return;
           }
         }
@@ -186,7 +178,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
           ),
       );
     },
-    [readAloudEnabled, responseId],
+    [readAloudEnabled, responseId, stopPlayback],
   );
 
   const value = useMemo(
