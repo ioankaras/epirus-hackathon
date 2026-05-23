@@ -3,24 +3,32 @@ const HEADER_NAME = "X-Device-Id";
 
 let cachedDeviceId: string | null = null;
 let originalFetch: typeof window.fetch | null = null;
+let pendingDeviceId: Promise<string> | null = null;
 
 export async function getDeviceId(): Promise<string> {
   if (cachedDeviceId) return cachedDeviceId;
+  if (pendingDeviceId) return pendingDeviceId;
 
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    cachedDeviceId = stored;
-    return stored;
-  }
+  pendingDeviceId = (async () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      cachedDeviceId = stored;
+      return stored;
+    }
 
-  const doFetch = originalFetch ? originalFetch : window.fetch;
-  const res = await doFetch("/api/register-device", { method: "POST" });
-  const data = await res.json();
-  const id = String(data.deviceId);
-  localStorage.setItem(STORAGE_KEY, id);
-  cachedDeviceId = id;
-  console.log("[device-id] registered:", id);
-  return id;
+    const doFetch = originalFetch ? originalFetch : window.fetch;
+    const res = await doFetch("/api/register-device", { method: "POST" });
+    const data = await res.json();
+    const id = String(data.deviceId);
+    localStorage.setItem(STORAGE_KEY, id);
+    cachedDeviceId = id;
+    console.log("[device-id] registered:", id);
+    return id;
+  })().finally(() => {
+    pendingDeviceId = null;
+  }) as Promise<string>;
+
+  return pendingDeviceId;
 }
 
 export function patchGlobalFetch() {
