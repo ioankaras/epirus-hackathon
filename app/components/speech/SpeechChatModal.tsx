@@ -80,6 +80,7 @@ export default function SpeechChatModal() {
     readAloudEnabled,
     setReadAloudEnabled,
     sendAudio,
+    stopPlayback,
   } = useSpeechChat();
   const { status, errorMessage, isRecording, toggleRecording } =
     useSpeechRecorder();
@@ -109,11 +110,12 @@ export default function SpeechChatModal() {
   }, [isOpen]);
 
   const handleRecordToggle = useCallback(async () => {
+    stopPlayback();
     const blob = await toggleRecording();
     if (blob) {
       await sendAudio(blob);
     }
-  }, [toggleRecording, sendAudio]);
+  }, [toggleRecording, sendAudio, stopPlayback]);
 
   if (!isOpen) return null;
 

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -20,6 +21,7 @@ type SpeechChatContextValue = {
   readAloudEnabled: boolean;
   setReadAloudEnabled: (enabled: boolean) => void;
   sendAudio: (audioBlob: Blob) => Promise<void>;
+  stopPlayback: () => void;
 };
 
 const SpeechChatContext = createContext<SpeechChatContextValue | null>(null);
@@ -36,27 +38,44 @@ function speakText(text: string) {
   window.speechSynthesis.speak(utterance);
 }
 
+function cancelSpeech() {
+  if (typeof window !== "undefined") {
+    window.speechSynthesis?.cancel();
+  }
+}
+
 export function SpeechChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [readAloudEnabled, setReadAloudEnabled] = useState(true);
   const [responseId, setResponseId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const isAwaitingReply = messages.some(
     (message) => message.role === "assistant" && message.kind === "loading",
   );
 
   const open = useCallback(() => setIsOpen(true), []);
+
+  const stopPlayback = useCallback(() => {
+    cancelSpeech();
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
+
   const close = useCallback(() => {
     setIsOpen(false);
-    if (typeof window !== "undefined") {
-      window.speechSynthesis?.cancel();
-    }
-  }, []);
+    stopPlayback();
+  }, [stopPlayback]);
 
   const sendAudio = useCallback(
     async (audioBlob: Blob) => {
       if (audioBlob.size === 0) return;
+
+      cancelSpeech();
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       const mimeType = audioBlob.type || "audio/webm";
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -80,8 +99,6 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
         },
       ]);
 
-      // Attempt transcription; gracefully continue on failure or empty result
-      let transcript: string | undefined;
       try {
         const transcribeForm = new FormData();
         transcribeForm.append(
@@ -95,6 +112,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
         const transcribeResponse = await fetch("/api/transcribe", {
           method: "POST",
           body: transcribeForm,
+          signal: controller.signal,
         });
         if (transcribeResponse.ok) {
           const transcribeData = await transcribeResponse.json() as {
@@ -106,11 +124,10 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
 
           const text = transcribeData.transcript?.trim();
           if (text) {
-            transcript = text;
             setMessages((prev) =>
               prev.map((message) =>
                 message.id === userMessageId && message.role === "user"
-                  ? { ...message, transcript }
+                  ? { ...message, transcript: text }
                   : message,
               ),
             );
@@ -135,8 +152,8 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
-      } catch {
-        // transcription is optional; proceed without it
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
       }
 
       // Remove loading indicator and mark message as sent
@@ -163,8 +180,9 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
       readAloudEnabled,
       setReadAloudEnabled,
       sendAudio,
+      stopPlayback,
     }),
-    [isOpen, open, close, messages, isAwaitingReply, readAloudEnabled, sendAudio],
+    [isOpen, open, close, messages, isAwaitingReply, readAloudEnabled, sendAudio, stopPlayback],
   );
 
   return (
