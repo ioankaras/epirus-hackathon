@@ -26,6 +26,9 @@ self.addEventListener("fetch", (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached ?? new Response(null, { status: 503, statusText: "Service Unavailable" });
+      })
   );
 });
