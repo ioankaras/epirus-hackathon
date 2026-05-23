@@ -10,19 +10,20 @@ export default function HistoryPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-xl text-text-secondary">Loading...</p>
+        <p className="text-xl text-text-secondary">Φόρτωση...</p>
       </div>
     );
   }
 
   return (
     <div>
-      <PageHeader title="Past Transactions" />
+      <PageHeader title="Ιστορικό" />
 
       <div className="px-4 py-5 flex flex-col gap-3">
+        <h1 className="text-2xl font-bold text-primary-navy mb-2">Ιστορικό Συναλλαγών</h1>
         {transactions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-xl text-text-secondary">No transactions yet</p>
+            <p className="text-xl text-text-secondary">Δεν υπάρχουν συναλλαγές</p>
           </div>
         ) : (
           transactions.map((tx) => (

@@ -8,13 +8,13 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({
-  title,
+  title: _title,
   showBack = true,
 }: PageHeaderProps) {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-10 bg-primary-navy text-white px-4 py-4 flex items-center gap-3 min-h-[64px]">
+    <header className="sticky top-0 z-10 bg-gradient-brand-diagonal text-white px-4 py-4 flex items-center gap-3 min-h-[64px] rounded-b-3xl">
       {showBack && (
         <button
           onClick={() => router.back()}
@@ -36,7 +36,7 @@ export default function PageHeader({
           </svg>
         </button>
       )}
-      <h1 className="text-2xl font-bold">{title}</h1>
+      <h1 className="text-2xl font-bold">Πίσω</h1>
     </header>
   );
 }
