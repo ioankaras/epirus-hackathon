@@ -225,7 +225,7 @@ export default function BillsPage() {
               <div>
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex gap-px h-10 items-end">
-                    {[3,1,2,1,3,1,2,3,1,2,1,3].map((w, i) => (
+                    {[3, 1, 2, 1, 3, 1, 2, 3, 1, 2, 1, 3].map((w, i) => (
                       <div key={i} className="bg-primary-navy rounded-sm h-full" style={{ width: `${w * 3}px` }} />
                     ))}
                   </div>
