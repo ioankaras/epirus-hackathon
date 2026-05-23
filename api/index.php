@@ -138,15 +138,15 @@ if (preg_match('#^/accounts/(a\d{4})/transactions$#', $path, $m)) {
 }
 
 $routes = [
-    '/api/accounts'     => $accounts,
-    '/api/transactions' => $transactions,
-    '/api/contacts'     => $contacts,
-    '/api/bills'        => $bills,
+    '/mock-api/accounts'     => $accounts,
+    '/mock-api/transactions' => $transactions,
+    '/mock-api/contacts'     => $contacts,
+    '/mock-api/bills'        => $bills,
 ];
 
 if (array_key_exists($path, $routes)) {
     echo json_encode($routes[$path], JSON_PRETTY_PRINT);
 } else {
     http_response_code(404);
-    echo json_encode(['error' => 'Not found', 'available' => ['/accounts', '/transactions', '/contacts', '/bills']]);
+    echo json_encode(['error' => 'Not found', 'available' => ['/mock-api/accounts', '/mock-api/transactions', '/mock-api/contacts', '/mock-api/bills']]);
 }
