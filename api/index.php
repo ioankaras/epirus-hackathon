@@ -65,7 +65,6 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
 
     // Atomic transfer
     $now  = (new DateTime())->format('Y-m-d\TH:i:s\Z');
-    $date = (new DateTime())->format('Y-m-d');
 
     $db->beginTransaction();
     try {
@@ -82,7 +81,7 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
                       VALUES (:id, :aid, :uid, "debit", "Transfer sent", :amt, "EUR", :date, :to)')
            ->execute([':id' => $txDebitId, ':aid' => $fromAccount, ':uid' => $uid,
-                      ':amt' => $amount, ':date' => $date, ':to' => $toAccount]);
+                      ':amt' => $amount, ':date' => $now, ':to' => $toAccount]);
 
         // Credit tx for receiver (look up receiver's user_id)
         $receiverUid = $db->prepare('SELECT user_id FROM accounts WHERE id = :id');
@@ -93,7 +92,7 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
                       VALUES (:id, :aid, :uid, "credit", "Transfer received", :amt, "EUR", :date, :from)')
            ->execute([':id' => $txCreditId, ':aid' => $toAccount, ':uid' => $receiverRow['user_id'],
-                      ':amt' => $amount, ':date' => $date, ':from' => $fromAccount]);
+                      ':amt' => $amount, ':date' => $now, ':from' => $fromAccount]);
 
         $db->commit();
     } catch (Exception $e) {

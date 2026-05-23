@@ -203,8 +203,7 @@ foreach ($allNames as $idx => [$first, $last]) {
         $descs    = $type === 'credit' ? $creditDescs : $debitDescs;
         $desc     = $descs[$t % count($descs)];
         $amount   = round(5 + fmod($uid * 7.37 + $t * 13.11, 995), 2);
-        $daysAgo  = $t % 90;
-        $date     = (clone $baseDate)->modify("-{$daysAgo} days")->format('Y-m-d');
+        $date     = (clone $baseDate)->modify("-{$t} hours")->format('Y-m-d\TH:i:s\Z');
         $recipient = null;
 
         if ($type === 'credit' && in_array($desc, ['Transfer received', 'Client invoice paid', 'Freelance payment'])) {
