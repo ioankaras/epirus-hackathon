@@ -15,6 +15,7 @@ const MCP_URL =
 export async function POST(request: Request) {
   const formData = await request.formData();
   const audio = formData.get("audio");
+  const previousResponseId = formData.get("previousResponseId");
 
   if (!(audio instanceof File) || audio.size === 0) {
     return Response.json({ success: false, error: "no_audio" }, { status: 400 });
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
     const response = await openai.responses.create({
       model: "gpt-5.5",
       input: transcript,
+      ...(typeof previousResponseId === "string" && previousResponseId
+        ? { previous_response_id: previousResponseId }
+        : {}),
       tools: [
         {
           type: "mcp",
@@ -46,16 +50,18 @@ export async function POST(request: Request) {
 
     const reply =
       response.output
-        .filter((o: { type: string }) => o.type === "message")
-        .map((o: { content: { type: string; text: string }[] }) =>
-          o.content
-            .filter((c) => c.type === "output_text")
-            .map((c) => c.text)
-            .join(""),
+        .filter((o) => o.type === "message")
+        .map((o) =>
+          "content" in o
+            ? o.content
+                .filter((c) => c.type === "output_text")
+                .map((c) => ("text" in c ? c.text : ""))
+                .join("")
+            : "",
         )
         .join("") || "";
 
-    return Response.json({ success: true, transcript, reply });
+    return Response.json({ success: true, transcript, reply, responseId: response.id });
   } catch (e) {
     console.error("Transcribe/chat error:", e);
     return Response.json(

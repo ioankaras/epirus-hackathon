@@ -40,6 +40,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [readAloudEnabled, setReadAloudEnabled] = useState(true);
+  const [responseId, setResponseId] = useState<string | null>(null);
 
   const isAwaitingReply = messages.some(
     (message) => message.role === "assistant" && message.kind === "loading",
@@ -88,6 +89,9 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
           audioBlob,
           `speech-${Date.now()}.${getAudioFileExtension(mimeType)}`,
         );
+        if (responseId) {
+          transcribeForm.append("previousResponseId", responseId);
+        }
         const transcribeResponse = await fetch("/api/transcribe", {
           method: "POST",
           body: transcribeForm,
@@ -97,6 +101,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
             success?: boolean;
             transcript?: string | null;
             reply?: string | null;
+            responseId?: string | null;
           };
 
           const text = transcribeData.transcript?.trim();
@@ -113,6 +118,9 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
 
           const reply = transcribeData.reply?.trim();
           if (reply) {
+            if (transcribeData.responseId) {
+              setResponseId(transcribeData.responseId);
+            }
             setMessages((prev) => [
               ...prev
                 .filter((message) => message.id !== loadingMessageId)
@@ -142,7 +150,7 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
           ),
       );
     },
-    [readAloudEnabled],
+    [readAloudEnabled, responseId],
   );
 
   const value = useMemo(
