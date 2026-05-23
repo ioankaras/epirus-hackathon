@@ -188,7 +188,7 @@ if ($path === '/mock-api/bills') {
             'category' => 'Τηλεφωνία',
             'currency' => 'EUR',
             'amount'   => 21.66,
-            'due_date' => '31-05-2026',
+            'due_date' => '2026-05-31T15:43:01.402Z',
             'provider' => 'e-Bill',
         ],
     ];
