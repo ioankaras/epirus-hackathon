@@ -44,7 +44,6 @@ export function useSpeechRecorder() {
 
     return new Promise((resolve) => {
       stopResolveRef.current = resolve;
-      recorder.requestData();
       recorder.stop();
       mediaRecorderRef.current = null;
     });
@@ -70,6 +69,14 @@ export function useSpeechRecorder() {
     discardRecorder();
     releaseStream();
 
+    // Cancel any ongoing speech synthesis so the iOS audio session is free
+    // before getUserMedia() is called. Otherwise the session may still be in
+    // playback mode when recording starts, causing the first frames to be
+    // silent or clipped.
+    if (typeof window !== "undefined") {
+      window.speechSynthesis?.cancel();
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -84,14 +91,24 @@ export function useSpeechRecorder() {
       // Some mobile browsers (iOS Safari) report a mimeType as supported via
       // isTypeSupported but throw when passing it to the constructor.
       // Fall back to the browser's default if that happens.
+      //
+      // Also capture the effective MIME type at construction time. iOS Safari
+      // has a bug where recorder.mimeType is an empty string even after
+      // recording, so we cannot rely on it in onstop. When the constructor
+      // fallback is used it means the probed mimeType was wrong (e.g. iOS
+      // falsely reporting webm as supported); in that case iOS records
+      // audio/mp4, so we use that as the effective type.
       let recorder: MediaRecorder;
+      let effectiveMimeType: string;
       try {
         recorder = new MediaRecorder(
           stream,
           mimeType ? { mimeType } : undefined,
         );
+        effectiveMimeType = recorder.mimeType || mimeType || "audio/webm";
       } catch {
         recorder = new MediaRecorder(stream);
+        effectiveMimeType = recorder.mimeType || "audio/mp4";
       }
 
       streamRef.current = stream;
@@ -119,7 +136,7 @@ export function useSpeechRecorder() {
         const blob =
           chunks.length > 0
             ? new Blob(chunks, {
-                type: recorder.mimeType || mimeType || "audio/webm",
+                type: recorder.mimeType || effectiveMimeType,
               })
             : null;
 
