@@ -1,4 +1,4 @@
-name: hackathon-mcp
+name: hackathon-api
 
 services:
   php-mcp:
