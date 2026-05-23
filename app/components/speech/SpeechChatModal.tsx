@@ -131,56 +131,65 @@ export default function SpeechChatModal() {
         aria-modal="true"
         aria-labelledby="speech-chat-title"
         tabIndex={-1}
-        className="pointer-events-auto flex h-[50dvh] max-h-[50vh] min-h-[280px] w-full flex-col rounded-t-3xl bg-background shadow-[0_-8px_30px_rgba(0,0,0,0.12)] outline-none"
+        className="pointer-events-auto flex h-[75dvh] max-h-[75vh] min-h-[280px] w-full flex-col bg-background shadow-[0_-8px_30px_rgba(0,0,0,0.12)] outline-none"
       >
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-black/5 px-5 py-4">
-          <div>
-            <h2
-              id="speech-chat-title"
-              className="text-lg font-bold text-primary-navy"
-            >
-              AI Speech
-            </h2>
-            <p className="text-sm text-text-secondary">
-              Voice banking assistant
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-text-secondary">
-              <input
-                type="checkbox"
-                checked={readAloudEnabled}
-                onChange={(event) =>
-                  setReadAloudEnabled(event.target.checked)
-                }
-                className="h-4 w-4 rounded border-gray-300 text-action-blue focus:ring-action-blue/40"
-              />
-              Read replies
-            </label>
+        <header className="shrink-0 border-b border-black/5 px-4 py-3">
+          {/* Row 1: identity + close */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-ai ai-glow">
+              <span className="text-xs font-bold text-white tracking-tight select-none">AI</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2
+                id="speech-chat-title"
+                className="text-base font-bold text-primary-navy leading-tight"
+              >
+                AI Assistant
+              </h2>
+              <p className="text-xs text-text-secondary leading-tight">
+                Voice banking assistant
+              </p>
+            </div>
             <button
               type="button"
               onClick={close}
               aria-label="Close"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-primary-navy shadow-sm active:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-action-blue/40"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-primary-navy shadow-sm active:bg-gray-100 focus:outline-none"
             >
               <svg
-                className="h-5 w-5"
+                className="h-4 w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
                 strokeWidth={2.5}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
+            </button>
+          </div>
+
+          {/* Row 2: read replies toggle */}
+          <div className="mt-4 flex items-center gap-2 pl-12">
+            <span className="text-xs text-text-secondary select-none">Read replies</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={readAloudEnabled}
+              onClick={() => setReadAloudEnabled(!readAloudEnabled)}
+              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                readAloudEnabled ? "bg-green-500" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform duration-200 ${
+                  readAloudEnabled ? "translate-x-[23px]" : "translate-x-[4px]"
+                }`}
+              />
             </button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
           {messages.length === 0 ? (
             <p className="text-center text-base text-text-secondary">
               Tap the microphone to send a voice message.
@@ -205,7 +214,7 @@ export default function SpeechChatModal() {
           )}
         </div>
 
-        <footer className="shrink-0 border-t border-black/5 px-5 py-4 pb-6">
+        <footer className="shrink-0 border-t border-black/5 px-4 py-3 pb-5">
           {errorMessage && (
             <p className="mb-3 text-sm text-accent-red">{errorMessage}</p>
           )}
@@ -224,15 +233,15 @@ export default function SpeechChatModal() {
               }
               className={
                 isRecording
-                  ? "flex h-16 w-16 items-center justify-center rounded-full bg-accent-red text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-accent-red/40 disabled:opacity-50"
-                  : "flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-navy to-action-blue text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-action-blue/40 disabled:opacity-50"
+                  ? "flex h-14 w-14 items-center justify-center rounded-full bg-accent-red text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-accent-red/40 disabled:opacity-50"
+                  : "flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary-navy to-action-blue text-white shadow-lg active:opacity-95 focus:outline-none focus:ring-4 focus:ring-action-blue/40 disabled:opacity-50"
               }
             >
               {isRecording ? (
                 <span className="h-5 w-5 rounded-sm bg-white" />
               ) : (
                 <svg
-                  className="h-8 w-8"
+                  className="h-7 w-7"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

@@ -32,6 +32,6 @@ export interface Bill {
   currency: string;
   dueDate: string;
   status: "unpaid" | "paid";
-  category: "electricity" | "water" | "phone" | "internet" | "gas";
+  category: "Ρεύμα" | "Νερό" | "Τηλεφωνία" | "internet" | "Καύσιμα";
   rf: string;
 }
