@@ -18,13 +18,13 @@ export default function Home() {
   return (
     <div>
       {/* Balance Header */}
-      <div className="bg-gradient-brand-diagonal text-white px-6 pt-10 pb-8 rounded-b-3xl">
-        <p className="text-base text-white/70 mb-1">Διαθέσιμο Υπόλοιπο</p>
+      <div className="bg-primary-navy border-l-[5px] border-accent-red px-6 pt-10 pb-8 shadow-sm">
+        <p className="text-base text-white/60 mb-1">Διαθέσιμο Υπόλοιπο</p>
         <AmountDisplay
           amount={account?.balance ?? 0}
           className="text-white"
         />
-        <p className="text-sm text-white mt-3">
+        <p className="text-sm text-white/60 mt-3">
           {account?.name}
         </p>
       </div>

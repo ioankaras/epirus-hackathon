@@ -10,7 +10,7 @@ const PROMPT =
 
 const MCP_URL =
   process.env.HACKATHON_MCP_URL ??
-  "https://accessible-supernotably-bryon.ngrok-free.dev/mcp";
+  "https://hackathon.epignosishq.com/mcp";
 
 export async function POST(request: Request) {
   const formData = await request.formData();

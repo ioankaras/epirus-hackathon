@@ -14,11 +14,11 @@ export default function PageHeader({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-10 bg-gradient-brand-diagonal text-white px-4 py-4 flex items-center gap-3 min-h-[64px] rounded-b-3xl">
+    <header className="sticky top-0 z-10 flex items-center gap-3 min-h-[64px] bg-primary-navy border-l-[5px] border-accent-red px-4 py-4 shadow-sm">
       {showBack && (
         <button
           onClick={() => router.back()}
-          className="flex items-center justify-center w-11 h-11 rounded-full active:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="flex items-center justify-center w-11 h-11 rounded-full text-white active:bg-white/10 focus:outline-none"
           aria-label="Go back"
         >
           <svg
@@ -36,7 +36,7 @@ export default function PageHeader({
           </svg>
         </button>
       )}
-      <h1 className="text-2xl font-bold">Πίσω</h1>
+      <h1 className="text-2xl font-bold text-white">Πίσω</h1>
     </header>
   );
 }

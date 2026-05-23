@@ -58,3 +58,33 @@ body {
 .bg-gradient-accent {
   background: linear-gradient(135deg, #242674 0%, #ed1b24 100%);
 }
+
+.bg-gradient-ai {
+  background: linear-gradient(160deg, #242674 10%, #3a3cba 40%, #ed1b24 90%);
+}
+
+.ai-glow {
+  box-shadow:
+    0 0 24px rgba(36, 38, 116, 0.55),
+    0 0 12px rgba(237, 27, 36, 0.35),
+    0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes ai-ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+.animate-ai-ring {
+  animation: ai-ring-pulse 2.2s ease-out infinite;
+}
+
+.animate-ai-ring-delayed {
+  animation: ai-ring-pulse 2.2s ease-out infinite 1.1s;
+}

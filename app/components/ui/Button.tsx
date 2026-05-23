@@ -19,7 +19,7 @@ export default function Button({
     "min-h-[56px] px-6 rounded-xl text-xl font-semibold focus:outline-none focus:ring-4 focus:ring-action-blue/40 select-none";
 
   const variants = {
-    primary: "bg-gradient-brand-diagonal text-white active:opacity-90",
+    primary: "bg-action-blue text-white active:bg-action-blue-hover",
     danger: "bg-accent-red text-white active:bg-red-900",
     secondary:
       "bg-surface text-primary-navy border-2 border-border active:bg-gray-100",
