@@ -73,8 +73,14 @@ export function useSpeechRecorder() {
     // before getUserMedia() is called. Otherwise the session may still be in
     // playback mode when recording starts, causing the first frames to be
     // silent or clipped.
+    // Only cancel when something is actually queued/playing: calling cancel()
+    // on an idle iOS speechSynthesis corrupts its state for the session,
+    // causing all subsequent speak() calls to be silently ignored.
     if (typeof window !== "undefined") {
-      window.speechSynthesis?.cancel();
+      const synth = window.speechSynthesis;
+      if (synth && (synth.speaking || synth.pending)) {
+        synth.cancel();
+      }
     }
 
     try {
