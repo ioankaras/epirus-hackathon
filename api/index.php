@@ -210,5 +210,32 @@ if ($path === '/mock-api/bills') {
     exit;
 }
 
+// POST /mock-api/payments
+if ($path === '/mock-api/payments' && $method === 'POST') {
+    $stmt = $db->prepare('SELECT id FROM accounts WHERE user_id = :uid LIMIT 1');
+    $stmt->execute([':uid' => $uid]);
+    $account = $stmt->fetch();
+    if (!$account) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Account not found']);
+        exit;
+    }
+
+    $now = (new DateTime())->format('Y-m-d\TH:i:s\Z');
+
+    $db->prepare('UPDATE accounts SET balance = balance - 21.66, last_updated = :now WHERE id = :id')
+       ->execute([':now' => $now, ':id' => $account['id']]);
+
+    $maxTx = $db->query("SELECT MAX(CAST(SUBSTR(id, 2) AS INTEGER)) FROM transactions WHERE id LIKE 't%'")->fetchColumn();
+    $txId  = sprintf('t%04d', ($maxTx === null ? 0 : (int)$maxTx) + 1);
+    $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date)
+                  VALUES (:id, :aid, :uid, "debit", "Bill payment", 21.66, "EUR", :date)')
+       ->execute([':id' => $txId, ':aid' => $account['id'], ':uid' => $uid, ':date' => $now]);
+
+    http_response_code(200);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 http_response_code(404);
-echo json_encode(['error' => 'Not found', 'available' => ['/mock-api/accounts', '/mock-api/transactions', '/mock-api/contacts', '/mock-api/bills', '/mock-api/transfer']]);
+echo json_encode(['error' => 'Not found', 'available' => ['/mock-api/accounts', '/mock-api/transactions', '/mock-api/contacts', '/mock-api/bills', '/mock-api/transfer', '/mock-api/payments']]);
