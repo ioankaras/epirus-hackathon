@@ -48,12 +48,11 @@ export default function BillPay() {
         setError(null)
 
         try {
-            const response = await fetch("/mock-api/bills", {
+            const response = await fetch("/mock-api/payments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ billId: bill.rf }),
+                }
             })
 
             const data = await response.json()
