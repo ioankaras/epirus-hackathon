@@ -2,12 +2,12 @@ name: hackathon-api
 
 services:
   php-mcp:
-    image: webdevops/php-nginx:8.4
+    build:
+      context: .
+      dockerfile: Dockerfile
     platform: linux/amd64
     restart: unless-stopped
     working_dir: /app
-    volumes:
-      - ./api:/app
     ports:
       - "8080:80"
     environment:
