@@ -16,8 +16,8 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path   = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $path   = rtrim($path, '/');
 
-// POST /api/transfer
-if ($path === '/api/transfer' && $method === 'POST') {
+// POST /mock-api/transfer
+if ($path === '/mock-api/transfer' && $method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
     $fromAccount = $body['fromAccount'] ?? null;
@@ -108,8 +108,8 @@ if ($path === '/api/transfer' && $method === 'POST') {
     exit;
 }
 
-// Transactions for an account: /api/accounts/{id}/transactions
-if (preg_match('#^/api/accounts/(a\d+)/transactions$#', $path, $m)) {
+// Transactions for an account: /mock-api/accounts/{id}/transactions
+if (preg_match('#^/mock-api/accounts/(a\d+)/transactions$#', $path, $m)) {
     $check = $db->prepare('SELECT id FROM accounts WHERE id = :id AND user_id = :uid');
     $check->execute([':id' => $m[1], ':uid' => $uid]);
     if (!$check->fetch()) {
@@ -129,8 +129,8 @@ if (preg_match('#^/api/accounts/(a\d+)/transactions$#', $path, $m)) {
     exit;
 }
 
-// Single account (by X-Device-Id): /api/accounts
-if ($path === '/api/accounts') {
+// Single account (by X-Device-Id): /mock-api/accounts
+if ($path === '/mock-api/accounts') {
     $stmt = $db->prepare('SELECT id, name, account_number AS accountNumber, balance, currency, last_updated AS lastUpdated FROM accounts WHERE user_id = :uid LIMIT 1');
     $stmt->execute([':uid' => $uid]);
     $row = $stmt->fetch();
@@ -143,8 +143,8 @@ if ($path === '/api/accounts') {
     exit;
 }
 
-// All transactions: /api/transactions
-if ($path === '/api/transactions') {
+// All transactions: /mock-api/transactions
+if ($path === '/mock-api/transactions') {
     $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.currency, t.date, t.account_id AS accountId, t.recipient FROM transactions t WHERE t.user_id = :uid ORDER BY t.date DESC');
     $stmt->execute([':uid' => $uid]);
     $rows = $stmt->fetchAll();
@@ -157,8 +157,8 @@ if ($path === '/api/transactions') {
     exit;
 }
 
-// Single contact: /api/contacts/{id}
-if (preg_match('#^/api/contacts/(\d+)$#', $path, $m)) {
+// Single contact: /mock-api/contacts/{id}
+if (preg_match('#^/mock-api/contacts/(\d+)$#', $path, $m)) {
     $stmt = $db->prepare('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id WHERE c.id = :id');
     $stmt->execute([':id' => (int) $m[1]]);
     $row = $stmt->fetch();
@@ -171,15 +171,15 @@ if (preg_match('#^/api/contacts/(\d+)$#', $path, $m)) {
     exit;
 }
 
-// All contacts (global, unscoped): /api/contacts
-if ($path === '/api/contacts') {
+// All contacts (global, unscoped): /mock-api/contacts
+if ($path === '/mock-api/contacts') {
     $stmt = $db->query('SELECT c.id, c.name, c.account_number AS accountNumber, a.id AS accountId, c.initials FROM contacts c LEFT JOIN accounts a ON a.user_id = c.id ORDER BY c.id');
     echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
     exit;
 }
 
-// Bills: /api/bills
-if ($path === '/api/bills') {
+// Bills: /mock-api/bills
+if ($path === '/mock-api/bills') {
     $stmt = $db->prepare('SELECT id, provider, amount, currency, due_date AS dueDate, status, category, rf FROM bills WHERE user_id = :uid');
     $stmt->execute([':uid' => $uid]);
     echo json_encode($stmt->fetchAll(), JSON_PRETTY_PRINT);
@@ -187,4 +187,4 @@ if ($path === '/api/bills') {
 }
 
 http_response_code(404);
-echo json_encode(['error' => 'Not found', 'available' => ['/api/accounts', '/api/transactions', '/api/contacts', '/api/bills', '/api/transfer']]);
+echo json_encode(['error' => 'Not found', 'available' => ['/mock-api/accounts', '/mock-api/transactions', '/mock-api/contacts', '/mock-api/bills', '/mock-api/transfer']]);
