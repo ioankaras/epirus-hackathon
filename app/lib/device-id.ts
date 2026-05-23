@@ -28,6 +28,13 @@ export function patchGlobalFetch() {
   originalFetch = window.fetch;
 
   window.fetch = async function (input, init) {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
+    const isSameOrigin = url.startsWith("/") || url.startsWith(window.location.origin);
+
+    if (!isSameOrigin) {
+      return originalFetch!.call(this, input, init);
+    }
+
     if (!cachedDeviceId) {
       await getDeviceId();
     }
