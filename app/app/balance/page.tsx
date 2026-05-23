@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useBankContext } from "@/components/providers/BankProvider";
 import PageHeader from "@/components/ui/PageHeader";
 import AmountDisplay from "@/components/ui/AmountDisplay";
-import { formatDate, formatTime } from "@/lib/utils";
 
 export default function BalancePage() {
   const { account, loading } = useBankContext();
@@ -42,8 +41,12 @@ export default function BalancePage() {
           </h2>
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-base text-text-secondary">Δικαιούχος</p>
+              <p className="text-base text-text-secondary">Φιλικό Όνομα</p>
               <p className="text-lg font-semibold">{account.name}</p>
+            </div>
+            <div>
+              <p className="text-base text-text-secondary">Δικαιούχος</p>
+              <p className="text-lg font-semibold">{account.owner}</p>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
