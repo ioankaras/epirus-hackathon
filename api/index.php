@@ -20,9 +20,10 @@ $path   = rtrim($path, '/');
 if ($path === '/mock-api/transfer' && $method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
-    $fromAccount = $body['fromAccount'] ?? null;
-    $toAccount   = $body['toAccount']   ?? null;
-    $amount      = $body['amount']      ?? null;
+    $fromAccount = $body['fromAccount']  ?? null;
+    $toAccount   = $body['toAccount']    ?? null;
+    $amount      = $body['amount']       ?? null;
+    $description = $body['description']  ?? null;
 
     if ($fromAccount === null || $toAccount === null || $amount === null) {
         http_response_code(400);
@@ -84,10 +85,11 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         $maxTx = $db->query("SELECT MAX(CAST(SUBSTR(id, 2) AS INTEGER)) FROM transactions WHERE id LIKE 't%'")->fetchColumn();
         $nextTxNum = ($maxTx === null ? 0 : (int)$maxTx) + 1;
         $txDebitId = sprintf('t%04d', $nextTxNum);
+        $debitDesc = ($description !== null && $description !== '') ? $description : 'Αποστολή χρημάτων';
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
-                      VALUES (:id, :aid, :uid, "debit", "Αποστολή χρημάτων", :amt, "EUR", :date, :to)')
+                      VALUES (:id, :aid, :uid, "debit", :desc, :amt, "EUR", :date, :to)')
            ->execute([':id' => $txDebitId, ':aid' => $fromAccount, ':uid' => $uid,
-                      ':amt' => $amount, ':date' => $now, ':to' => $toAccount]);
+                      ':desc' => $debitDesc, ':amt' => $amount, ':date' => $now, ':to' => $toAccount]);
 
         // Credit tx for receiver (look up receiver's user_id)
         $receiverUid = $db->prepare('SELECT user_id FROM accounts WHERE id = :id');
