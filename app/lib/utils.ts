@@ -52,6 +52,15 @@ export function formatDate(dateString: string): string {
   }).format(date);
 }
 
+export function formatTransactionDate(dateString: string): string {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("el-GR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 export function formatTime(dateString: string): string {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("el-GR", {

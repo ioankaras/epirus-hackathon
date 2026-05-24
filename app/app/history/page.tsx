@@ -2,7 +2,7 @@
 
 import { useBankContext } from "@/components/providers/BankProvider";
 import PageHeader from "@/components/ui/PageHeader";
-import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
+import { formatCurrency, formatTransactionDate } from "@/lib/utils";
 
 export default function HistoryPage() {
   const { transactions, loading } = useBankContext();
@@ -34,13 +34,19 @@ export default function HistoryPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                    className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                       tx.type === "credit"
                         ? "bg-success/10 text-success"
+                        : tx.type === "bill"
+                        ? "bg-blue-100 text-blue-600"
                         : "bg-accent-red/10 text-accent-red"
                     }`}
                   >
-                    {tx.type === "credit" ? (
+                    {tx.type === "bill" ? (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    ) : tx.type === "credit" ? (
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7-7-7 7" />
                       </svg>
@@ -51,11 +57,14 @@ export default function HistoryPage() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-base font-semibold text-primary-navy leading-tight">
+                    <p className="text-base font-semibold text-primary-navy leading-tight truncate max-w-[180px]" title={tx.recipient}>
+                      {tx.recipient}
+                    </p>
+                    <p className="text-sm text-text-secondary leading-tight mt-0.5 truncate max-w-[180px]">
                       {tx.description}
                     </p>
-                    <p className="text-base text-text-secondary mt-1">
-                      {formatDate(tx.date)} &bull; {formatTime(tx.date)}
+                    <p className="text-sm text-text-secondary mt-1">
+                      {formatTransactionDate(tx.date)}
                     </p>
                   </div>
                 </div>
@@ -65,7 +74,7 @@ export default function HistoryPage() {
                   }`}
                 >
                   {tx.type === "credit" ? "+" : "-"}
-                  {formatCurrency(tx.amount)}
+                  {formatCurrency(tx.amount, tx.currency)} {tx.currency}
                 </p>
               </div>
             </div>

@@ -10,13 +10,13 @@ export interface Account {
 
 export interface Transaction {
   id: string;
-  type: "debit" | "credit";
+  type: "debit" | "credit" | "bill";
   description: string;
   amount: number;
   currency: string;
   date: string;
-  recipient?: string;
-  accountId?: string;
+  recipient: string;
+  accountId: string;
 }
 
 export interface Contact {
