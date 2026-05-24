@@ -56,26 +56,29 @@ export default function HistoryPage() {
                       </svg>
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-semibold text-primary-navy leading-tight truncate max-w-[180px]" title={tx.recipient}>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base font-semibold text-primary-navy leading-tight truncate" title={tx.recipient}>
                       {tx.recipient}
                     </p>
-                    <p className="text-sm text-text-secondary leading-tight mt-0.5 truncate max-w-[180px]">
+                    <p className="text-sm text-text-secondary leading-tight mt-0.5 truncate">
                       {tx.description}
                     </p>
-                    <p className="text-sm text-text-secondary mt-1">
+                    <p className="text-sm text-text-secondary mt-1 whitespace-nowrap">
                       {formatTransactionDate(tx.date)}
                     </p>
                   </div>
                 </div>
-                <p
-                  className={`text-lg font-bold shrink-0 whitespace-nowrap ${
-                    tx.type === "credit" ? "text-success" : "text-accent-red"
-                  }`}
-                >
-                  {tx.type === "credit" ? "+" : "-"}
-                  {formatCurrency(tx.amount, tx.currency)} {tx.currency}
-                </p>
+                <div className="shrink-0 text-right">
+                  <p
+                    className={`text-base font-bold whitespace-nowrap ${
+                      tx.type === "credit" ? "text-success" : "text-accent-red"
+                    }`}
+                  >
+                    {tx.type === "credit" ? "+" : "-"}
+                    {formatCurrency(tx.amount, tx.currency)}
+                  </p>
+                  <p className="text-xs text-text-secondary mt-0.5">{tx.currency}</p>
+                </div>
               </div>
             </div>
           ))
