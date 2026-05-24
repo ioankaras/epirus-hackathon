@@ -30,7 +30,11 @@ export default function SendPage() {
   } | null>(null);
 
   useEffect(() => {
-    if (step === "contact") setSearchQuery("");
+    if (step === "contact") {
+      queueMicrotask(() => {
+        setSearchQuery("")
+      })
+    };
   }, [step]);
 
   const filteredContacts = contacts.filter((c) =>

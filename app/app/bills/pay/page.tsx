@@ -9,7 +9,7 @@ import FeedbackModal from "@/components/ui/FeedbackModal";
 import { useBankContext } from "@/components/providers/BankProvider";
 
 export default function BillPay() {
-    const { refreshAccount } = useBankContext()
+    const { refreshAccount, refreshTransactions } = useBankContext()
     const searchParams = useSearchParams()
     const rfCode = searchParams.get("code")
 
@@ -74,6 +74,7 @@ export default function BillPay() {
                 });
                 setSuccess(true)
                 await refreshAccount()
+                await refreshTransactions()
             }
         } catch {
             setFeedback({
