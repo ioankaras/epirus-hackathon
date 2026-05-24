@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useSpeechChat } from "@/components/speech/SpeechChatProvider";
 import { useSpeechRecorder } from "@/components/speech/useSpeechRecorder";
 import type { ChatMessage } from "@/lib/speech/types";
@@ -57,10 +56,8 @@ function AssistantLoadingBubble() {
 
 function AssistantMessageBubble({
   message,
-  onAction,
 }: {
   message: Extract<ChatMessage, { kind: "text" }>;
-  onAction?: (action: string) => void;
 }) {
   return (
     <div className="flex justify-start">
@@ -69,31 +66,6 @@ function AssistantMessageBubble({
           ΒΟΗΘΟΣ
         </p>
         <p className="text-xl text-primary-navy leading-snug">{message.text}</p>
-        {message.actions?.includes("open_bill_scanner") && onAction && (
-          <button
-            type="button"
-            onClick={() => onAction("open_bill_scanner")}
-            className="mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-action-blue px-4 py-4 text-lg font-semibold text-white shadow active:bg-action-blue-hover focus:outline-none focus:ring-4 focus:ring-action-blue/40"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6"
-            >
-              <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-              <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-              <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-              <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-              <line x1="7" y1="12" x2="17" y2="12" />
-            </svg>
-            Άνοιγμα κάμερας
-          </button>
-        )}
       </div>
     </div>
   );
@@ -111,21 +83,10 @@ export default function SpeechChatModal() {
     stopPlayback,
     primeAudio,
   } = useSpeechChat();
-  const router = useRouter();
   const { status, errorMessage, isRecording, toggleRecording, stopRecording } =
     useSpeechRecorder();
   const panelRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const handleAction = useCallback(
-    (action: string) => {
-      if (action === "open_bill_scanner") {
-        close();
-        router.push("/bills?autoScan=true");
-      }
-    },
-    [close, router],
-  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
@@ -240,7 +201,7 @@ export default function SpeechChatModal() {
                   return <AssistantLoadingBubble key={message.id} />;
                 }
                 return (
-                  <AssistantMessageBubble key={message.id} message={message} onAction={handleAction} />
+                  <AssistantMessageBubble key={message.id} message={message} />
                 );
               })}
               <div ref={messagesEndRef} />

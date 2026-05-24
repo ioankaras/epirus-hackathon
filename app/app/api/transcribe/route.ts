@@ -44,18 +44,12 @@ const INSTRUCTIONS = `Είσαι ένας φιλικός και υπομονετ
 - Απαντάς ΜΟΝΟ σε ερωτήσεις που αφορούν τραπεζικές συναλλαγές: υπόλοιπο λογαριασμού, μεταφορές χρημάτων, πληρωμή λογαριασμών, κινήσεις λογαριασμού και επικοινωνία με την τράπεζα.
 - Αν κάποιος ρωτήσει κάτι άσχετο, πες του ευγενικά ότι μπορείς να βοηθήσεις μόνο με τραπεζικά θέματα.
 
-ΚΑΜΕΡΑ / ΣΚΑΝΑΡΙΣΜΑ:
-- Κάλεσε το open_bill_scanner όταν ο χρήστης θέλει να πληρώσει λογαριασμό παρόχου (ρεύμα, νερό, τηλέφωνο, ίντερνετ κ.λπ.) ή να σκανάρει κάτι με την κάμερα.
-- Όταν ο χρήστης θέλει να στείλει χρήματα σε ΠΡΟΣΩΠΟ (π.χ. "στείλε στον Γιάννη", "μεταφορά στον φίλο μου"), χρησιμοποίησε το send_money από τα εργαλεία MCP. Αυτό ΔΕΝ είναι πληρωμή λογαριασμού.
-- Για ερωτήσεις υπολοίπου, κινήσεων ή εξόδων ΠΟΤΕ μην καλείς το open_bill_scanner. Χρησιμοποίησε τα εργαλεία MCP.
-
 ΕΠΙΒΕΒΑΙΩΣΗ ΜΕΤΑΦΟΡΑΣ:
 - Πριν ζητήσεις επιβεβαίωση, ΠΡΕΠΕΙ να έχεις ήδη προσδιορίσει πλήρως τον παραλήπτη χρησιμοποιώντας τα εργαλεία MCP (get_contacts ή get_contact) και να γνωρίζεις το ακριβές ποσό. Αν δεν έχεις τα πλήρη στοιχεία, ρώτα πρώτα τον χρήστη ή ανακτή τα από τα εργαλεία.
 - Μόνο όταν γνωρίζεις ΑΚΡΙΒΩΣ ποιος είναι ο παραλήπτης (πλήρες όνομα από τις επαφές) και το ακριβές ποσό, ΤΟΤΕ ρώτα για επιβεβαίωση. Παράδειγμα: "Θέλετε να στείλετε πενήντα ευρώ στον Γιώργη Παπαδόπουλο; Πείτε μου ναι ή όχι."
 - ΠΟΤΕ μην καλείς το send_money την ίδια στροφή που ζητάς επιβεβαίωση.
 - Αν ο χρήστης απαντήσει καταφατικά (π.χ. "ναι", "εντάξει", "συνέχισε"), ΤΟΤΕ κάλεσε το send_money στην επόμενη στροφή.
-- Αν ο χρήστης απαντήσει αρνητικά (π.χ. "όχι", "ακύρωσε", "περίμενε") ή η απάντησή του είναι αμφίβολη ή διστακτική, ακύρωσε την ενέργεια και ενημέρωσε τον χρήστη ότι δεν στάλθηκε τίποτα. ΠΟΤΕ μην καλείς το send_money σε αυτή την περίπτωση.
-- Το open_bill_scanner ΔΕΝ χρειάζεται επιβεβαίωση. Κάλεσέ το αμέσως όταν χρειαστεί.`;
+- Αν ο χρήστης απαντήσει αρνητικά (π.χ. "όχι", "ακύρωσε", "περίμενε") ή η απάντησή του είναι αμφίβολη ή διστακτική, ακύρωσε την ενέργεια και ενημέρωσε τον χρήστη ότι δεν στάλθηκε τίποτα. ΠΟΤΕ μην καλείς το send_money σε αυτή την περίπτωση.`;
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -105,21 +99,12 @@ export async function POST(request: Request) {
           headers: mcpHeaders,
           require_approval: "never",
         },
-        {
-          type: "function" as const,
-          name: "open_bill_scanner",
-          description:
-            "Κάλεσε αυτό όταν ο χρήστης θέλει να πληρώσει λογαριασμό παρόχου (ρεύμα, νερό, τηλέφωνο, ίντερνετ, φυσικό αέριο κ.λπ.) ή να σκανάρει barcode/QR code. " +
-            "ΜΗΝ το καλείς όταν ο χρήστης θέλει να στείλει χρήματα σε πρόσωπο, να κάνει μεταφορά σε τραπεζικό λογαριασμό, ή να δει υπόλοιπο/κινήσεις. Για αυτά χρησιμοποίησε τα εργαλεία MCP.",
-          parameters: { type: "object" as const, properties: {}, additionalProperties: false },
-          strict: true,
-        },
       ],
     });
 
     console.log("OpenAI response output:", JSON.stringify(response.output, null, 2));
 
-    const reply =
+    const finalReply =
       response.output
         .filter((o) => o.type === "message")
         .map((o) =>
@@ -131,15 +116,6 @@ export async function POST(request: Request) {
             : "",
         )
         .join("") || "";
-
-    const actions = response.output
-      .filter((o) => o.type === "function_call")
-      .map((o) => ("name" in o ? (o.name as string) : ""))
-      .filter(Boolean);
-
-    const finalReply = reply || (actions.includes("open_bill_scanner")
-      ? "Ας ανοίξουμε την κάμερα για να σκανάρετε τον λογαριασμό σας."
-      : "");
 
     let audioBase64: string | null = null;
     if (finalReply) {
@@ -158,7 +134,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return Response.json({ success: true, transcript, reply: finalReply, responseId: response.id, actions, audioBase64 });
+    return Response.json({ success: true, transcript, reply: finalReply, responseId: response.id, audioBase64 });
   } catch (e) {
     console.error("Transcribe/chat error:", e);
     return Response.json(

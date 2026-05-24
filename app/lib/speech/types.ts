@@ -15,7 +15,6 @@ export type ChatMessage =
       role: "assistant";
       kind: "text";
       text: string;
-      actions?: string[];
     }
   | {
       id: string;

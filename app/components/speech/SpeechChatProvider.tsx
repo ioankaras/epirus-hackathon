@@ -135,7 +135,6 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
             transcript?: string | null;
             reply?: string | null;
             responseId?: string | null;
-            actions?: string[];
             audioBase64?: string | null;
           };
 
@@ -168,7 +167,6 @@ export function SpeechChatProvider({ children }: { children: ReactNode }) {
                 role: "assistant" as const,
                 kind: "text" as const,
                 text: reply,
-                ...(transcribeData.actions?.length ? { actions: transcribeData.actions } : {}),
               },
             ]);
             if (readAloudEnabled && transcribeData.audioBase64) {
