@@ -127,15 +127,12 @@ if (preg_match('#^/mock-api/accounts/(a\d+)/transactions$#', $path, $m)) {
         echo json_encode(['error' => 'Account not found']);
         exit;
     }
-    $stmt = $db->prepare('SELECT id, type, description, amount, date, account_id AS accountId, recipient FROM transactions WHERE account_id = :aid AND user_id = :uid ORDER BY date DESC');
+    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.date, t.account_id AS accountId, CASE WHEN t.type = \'bill\' THEN \'e-Bill\' WHEN ru.first_name IS NOT NULL THEN ru.first_name || \' \' || ru.last_name ELSE t.recipient END AS recipient FROM transactions t LEFT JOIN accounts ra ON ra.id = t.recipient LEFT JOIN users ru ON ru.id = ra.user_id WHERE t.account_id = :aid AND t.user_id = :uid ORDER BY t.date DESC');
     $stmt->execute([':aid' => $m[1], ':uid' => $uid]);
     $rows = $stmt->fetchAll();
     foreach ($rows as &$row) {
         $row['amount']   = (float) $row['amount'];
         $row['currency'] = 'EUR';
-        if ($row['recipient'] === null) {
-            unset($row['recipient']);
-        }
     }
     echo json_encode(array_values($rows), JSON_PRETTY_PRINT);
     exit;
@@ -159,15 +156,12 @@ if ($path === '/mock-api/accounts') {
 
 // All transactions: /mock-api/transactions
 if ($path === '/mock-api/transactions') {
-    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.date, t.account_id AS accountId, t.recipient FROM transactions t WHERE t.user_id = :uid ORDER BY t.date DESC');
+    $stmt = $db->prepare('SELECT t.id, t.type, t.description, t.amount, t.date, t.account_id AS accountId, CASE WHEN t.type = \'bill\' THEN \'e-Bill\' WHEN ru.first_name IS NOT NULL THEN ru.first_name || \' \' || ru.last_name ELSE t.recipient END AS recipient FROM transactions t LEFT JOIN accounts ra ON ra.id = t.recipient LEFT JOIN users ru ON ru.id = ra.user_id WHERE t.user_id = :uid ORDER BY t.date DESC');
     $stmt->execute([':uid' => $uid]);
     $rows = $stmt->fetchAll();
     foreach ($rows as &$row) {
         $row['amount']   = (float) $row['amount'];
         $row['currency'] = 'EUR';
-        if ($row['recipient'] === null) {
-            unset($row['recipient']);
-        }
     }
     echo json_encode(array_values($rows), JSON_PRETTY_PRINT);
     exit;
@@ -229,8 +223,8 @@ if ($path === '/mock-api/payments' && $method === 'POST') {
 
     $maxTx = $db->query("SELECT MAX(CAST(SUBSTR(id, 2) AS INTEGER)) FROM transactions WHERE id LIKE 't%'")->fetchColumn();
     $txId  = sprintf('t%04d', ($maxTx === null ? 0 : (int)$maxTx) + 1);
-    $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date)
-                  VALUES (:id, :aid, :uid, "debit", "Bill payment", 21.66, "EUR", :date)')
+    $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
+                  VALUES (:id, :aid, :uid, "bill", "Bill payment", 21.66, "EUR", :date, "e-Bill")')
        ->execute([':id' => $txId, ':aid' => $account['id'], ':uid' => $uid, ':date' => $now]);
 
     http_response_code(200);

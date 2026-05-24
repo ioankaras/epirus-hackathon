@@ -204,11 +204,11 @@ foreach ($allNames as $idx => [$first, $last]) {
         $desc     = $descs[$t % count($descs)];
         $amount   = round(5 + fmod($uid * 7.37 + $t * 13.11, 995), 2);
         $date     = (clone $baseDate)->modify("-{$t} hours")->format('Y-m-d\TH:i:s\Z');
-        $recipient = null;
-
-        if ($type === 'credit' && in_array($desc, ['Transfer received', 'Client invoice paid', 'Freelance payment'])) {
-            $recipient = $allNames[($uid + $t) % 100][0] . ' ' . $allNames[($uid + $t) % 100][1];
+        $recipientUid = (($uid + $t) % 100) + 1;
+        if ($recipientUid === $uid) {
+            $recipientUid = ($recipientUid % 100) + 1;
         }
+        $recipient = sprintf('a%04d', $recipientUid);
 
         $insertTx->execute([
             ':id'        => $txId,
