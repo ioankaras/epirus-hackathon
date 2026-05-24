@@ -85,7 +85,7 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
         $nextTxNum = ($maxTx === null ? 0 : (int)$maxTx) + 1;
         $txDebitId = sprintf('t%04d', $nextTxNum);
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
-                      VALUES (:id, :aid, :uid, "debit", "Transfer sent", :amt, "EUR", :date, :to)')
+                      VALUES (:id, :aid, :uid, "debit", "Αποστολή χρημάτων", :amt, "EUR", :date, :to)')
            ->execute([':id' => $txDebitId, ':aid' => $fromAccount, ':uid' => $uid,
                       ':amt' => $amount, ':date' => $now, ':to' => $toAccount]);
 
@@ -96,7 +96,7 @@ if ($path === '/mock-api/transfer' && $method === 'POST') {
 
         $txCreditId = sprintf('t%04d', $nextTxNum + 1);
         $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
-                      VALUES (:id, :aid, :uid, "credit", "Transfer received", :amt, "EUR", :date, :from)')
+                      VALUES (:id, :aid, :uid, "credit", "Λήψη χρημάτων", :amt, "EUR", :date, :from)')
            ->execute([':id' => $txCreditId, ':aid' => $toAccount, ':uid' => $receiverRow['user_id'],
                       ':amt' => $amount, ':date' => $now, ':from' => $fromAccount]);
 
@@ -224,7 +224,7 @@ if ($path === '/mock-api/payments' && $method === 'POST') {
     $maxTx = $db->query("SELECT MAX(CAST(SUBSTR(id, 2) AS INTEGER)) FROM transactions WHERE id LIKE 't%'")->fetchColumn();
     $txId  = sprintf('t%04d', ($maxTx === null ? 0 : (int)$maxTx) + 1);
     $db->prepare('INSERT INTO transactions (id, account_id, user_id, type, description, amount, currency, date, recipient)
-                  VALUES (:id, :aid, :uid, "bill", "Bill payment", 21.66, "EUR", :date, "e-Bill")')
+                  VALUES (:id, :aid, :uid, "bill", "Πληρωμή λογαριασμού", 21.66, "EUR", :date, "e-Bill")')
        ->execute([':id' => $txId, ':aid' => $account['id'], ':uid' => $uid, ':date' => $now]);
 
     http_response_code(200);

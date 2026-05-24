@@ -145,16 +145,16 @@ $insertBill = $db->prepare('
     VALUES (:id, :uid, :provider, :amount, "EUR", :due, :status, :cat, :rf)
 ');
 
-$accountNames   = ['Main Checking', 'Savings Account', 'Business Account', 'Investment Account', 'Joint Account'];
+$accountNames   = ['Κύριος Λογαριασμός', 'Ταμιευτήριο', 'Επαγγελματικός Λογαριασμός', 'Επενδυτικός Λογαριασμός', 'Κοινός Λογαριασμός'];
 $debitDescs     = [
-    'Supermarket purchase', 'Coffee shop', 'Online shopping', 'Fuel station',
-    'Restaurant dinner', 'Pharmacy', 'Gym membership', 'Streaming subscription',
-    'Utility payment', 'ATM withdrawal', 'Public transport', 'Bookstore',
-    'Insurance premium', 'Mobile top-up', 'Clothing store',
+    'Αγορά σούπερ μάρκετ', 'Καφετέρια', 'Ηλεκτρονικές αγορές', 'Πρατήριο καυσίμων',
+    'Δείπνο εστιατορίου', 'Φαρμακείο', 'Συνδρομή γυμναστηρίου', 'Συνδρομή streaming',
+    'Πληρωμή λογαριασμού', 'Ανάληψη ΑΤΜ', 'Δημόσιες συγκοινωνίες', 'Βιβλιοπωλείο',
+    'Ασφάλιστρο', 'Ανανέωση κινητού', 'Κατάστημα ρούχων',
 ];
 $creditDescs    = [
-    'Salary deposit', 'Freelance payment', 'Transfer received', 'Refund',
-    'Bonus payment', 'Dividend', 'Rental income', 'Client invoice paid',
+    'Κατάθεση μισθού', 'Πληρωμή freelance', 'Μεταφορά κεφαλαίων', 'Επιστροφή χρημάτων',
+    'Επίδομα', 'Μέρισμα', 'Εισόδημα ενοικίασης', 'Εξόφληση τιμολογίου',
 ];
 $billProviders  = [
     ['DEH',         'electricity'],
@@ -188,7 +188,7 @@ foreach ($allNames as $idx => [$first, $last]) {
     $insertAccount->execute([
         ':id'      => $aid,
         ':uid'     => $uid,
-        ':name'    => 'Main Checking',
+        ':name'    => 'Κύριος Λογαριασμός',
         ':anum'    => $aNum,
         ':balance' => $balance,
         ':updated' => $updated,
